@@ -241,6 +241,29 @@ export function TrendingSection() {
               </motion.div>
             ))}
           </div>
+
+          {/* Premium Advertisement Card */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            whileHover={{ y: -5 }}
+            className="mt-6 p-8 rounded-3xl bg-nag-green-primary/5 border border-nag-green-primary/20 flex flex-col items-center text-center space-y-4 group cursor-pointer transition-all hover:bg-nag-green-primary/10"
+          >
+            <div className="w-14 h-14 rounded-2xl bg-white border border-nag-green-primary/20 flex items-center justify-center text-nag-green-primary shadow-sm group-hover:scale-110 transition-transform">
+               <TrendingUp size={28} />
+            </div>
+            <div className="space-y-1">
+              <h4 className="font-display font-black text-xl tracking-tight text-nag-black uppercase">Advertise Here</h4>
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-nag-green-primary">Reach 12.4M monthly readers</p>
+            </div>
+            <p className="text-xs text-nag-gray-deep font-medium opacity-60 leading-relaxed max-w-[200px]">
+              Partner with Nigeria's most trusted strategic intelligence collective.
+            </p>
+            <button className="text-[9px] font-black uppercase tracking-widest text-nag-green-primary border-b border-nag-green-primary pb-1 hover:gap-4 transition-all flex items-center gap-2">
+              Media Kit 2026 <ChevronRight size={12} />
+            </button>
+          </motion.div>
         </div>
 
       </div>

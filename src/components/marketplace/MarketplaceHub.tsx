@@ -272,6 +272,7 @@ export function MarketplaceHub() {
 
 interface ListingCardProps {
   item: MarketplaceItem;
+  key?: string;
 }
 
 function ListingCard({ item }: ListingCardProps) {

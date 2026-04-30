@@ -1,5 +1,5 @@
 import { motion } from 'motion/react';
-import { ArrowUpRight, BookOpen, Shield, Zap } from 'lucide-react';
+import { ArrowUpRight, BookOpen, Shield, Zap, ChevronRight } from 'lucide-react';
 
 export function SpecialReports() {
   const reports = [
@@ -83,19 +83,68 @@ export function SpecialReports() {
 
         <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8">
           {[
-            { icon: BookOpen, title: 'Archived Dossiers', desc: 'Access 2,000+ deep-dive investigative files recorded since 2018.' },
-            { icon: Zap, title: 'Real-time Pulse', desc: 'Live data visualizations for trending national security & fiscal indices.' },
-            { icon: Shield, title: 'Vetted Evidence', desc: 'Our rigorous internal review process ensures multi-source verification.' }
+            { 
+              icon: BookOpen, 
+              title: 'Archived Dossiers', 
+              subtitle: 'INVESTIGATIVE ARCHIVE',
+              desc: 'Access 2,000+ deep-dive investigative files recorded since 2018.',
+              img: 'https://images.unsplash.com/photo-1507842217343-583bb7270b66?q=80&w=800&fit=crop'
+            },
+            { 
+              icon: Zap, 
+              title: 'Real-time Pulse', 
+              subtitle: 'LIVE INTELLIGENCE',
+              desc: 'Live data visualizations for trending national security & fiscal indices.',
+              img: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=800&fit=crop'
+            },
+            { 
+              icon: Shield, 
+              title: 'Vetted Evidence', 
+              subtitle: 'FACT-CHECKING UNIT',
+              desc: 'Our rigorous internal review process ensures multi-source verification.',
+              img: 'https://images.unsplash.com/photo-1454165833767-027ff33027ef?q=80&w=800&fit=crop'
+            }
           ].map((item, i) => (
-            <div key={i} className="p-8 rounded-3xl bg-nag-gray-bg border border-nag-border hover:border-nag-green-primary/30 transition-all group">
-              <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center text-nag-green-primary mb-6 shadow-sm group-hover:bg-nag-green-primary group-hover:text-white transition-all">
-                <item.icon size={22} />
+            <motion.div 
+              key={i}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.1 }}
+              whileHover={{ y: -12 }}
+              className="group relative h-[320px] md:h-[350px] rounded-[40px] overflow-hidden bg-white border border-nag-border hover:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.1)] hover:border-nag-green-primary/30 transition-all duration-700 cursor-pointer"
+            >
+              {/* Subtle Background Asset */}
+              <div className="absolute inset-0 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity duration-700 grayscale">
+                <img src={item.img} alt="" className="w-full h-full object-cover" />
               </div>
-              <h4 className="font-black text-xl tracking-tight mb-3 uppercase">{item.title}</h4>
-              <p className="text-nag-gray-deep font-medium opacity-60 text-sm leading-relaxed">{item.desc}</p>
-            </div>
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/50 to-white"></div>
+              
+              <div className="relative h-full p-8 flex flex-col justify-between z-10">
+                <div className="space-y-6">
+                  <div className="w-12 h-12 rounded-2xl bg-nag-gray-bg border border-nag-border flex items-center justify-center text-nag-green-primary group-hover:bg-nag-green-primary group-hover:text-white transition-all duration-500 shadow-sm">
+                    <item.icon size={22} />
+                  </div>
+                  <div>
+                    <p className="text-[9px] font-black uppercase tracking-[0.3em] text-nag-green-primary mb-2">
+                      {item.subtitle}
+                    </p>
+                    <h4 className="text-2xl font-black text-nag-black tracking-tighter uppercase leading-tight">
+                      {item.title}
+                    </h4>
+                  </div>
+                  <p className="text-nag-gray-deep font-medium opacity-60 text-sm leading-relaxed max-w-[240px] group-hover:opacity-100 transition-opacity">
+                    {item.desc}
+                  </p>
+                </div>
+                
+                <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-nag-green-primary group-hover:gap-4 transition-all">
+                  Explore Hub <ChevronRight size={14} />
+                </div>
+              </div>
+            </motion.div>
           ))}
         </div>
+
       </div>
     </section>
   );

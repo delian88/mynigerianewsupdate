@@ -71,3 +71,16 @@
   margin-right: auto;
   width: 100%;
 }
+
+@utility glass-premium {
+  @apply backdrop-blur-xl bg-white/70 border border-white/20 shadow-2xl;
+}
+
+@utility glass-dark {
+  @apply backdrop-blur-xl bg-black/40 border border-white/10 shadow-2xl;
+}
+
+@utility subtle-glow {
+  box-shadow: 0 0 40px -10px var(--color-nag-green-primary);
+}
+

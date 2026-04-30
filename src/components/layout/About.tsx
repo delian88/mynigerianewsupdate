@@ -53,43 +53,43 @@ export function About() {
           </div>
 
           <div className="lg:col-span-5">
-            <div className="bg-white p-8 md:p-12 rounded-[40px] border border-nag-border shadow-3xl relative overflow-hidden group">
+            <div className="glass-premium p-8 md:p-12 rounded-[40px] relative overflow-hidden group">
                <div className="absolute top-0 right-0 w-48 h-48 bg-nag-green-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
                
                <div className="relative z-10 space-y-10">
                  <div className="space-y-2">
-                    <h3 className="font-display font-black text-3xl tracking-tight text-nag-black">Connect with us</h3>
-                    <p className="text-nag-gray-deep font-medium">Join the intelligence network.</p>
+                    <h3 className="font-display font-black text-3xl tracking-tight text-nag-black uppercase">Connect with us</h3>
+                    <p className="text-nag-gray-deep font-medium opacity-60">Join the intelligence network.</p>
                  </div>
 
                  <div className="space-y-6">
                     <div className="flex items-center gap-4 group/item cursor-pointer">
-                       <div className="w-12 h-12 rounded-2xl bg-nag-gray-bg flex items-center justify-center text-nag-gray-deep group-hover/item:bg-nag-green-primary group-hover/item:text-white transition-all shadow-sm">
+                       <div className="w-12 h-12 rounded-2xl bg-white border border-nag-border flex items-center justify-center text-nag-gray-deep group-hover/item:bg-nag-green-primary group-hover/item:text-white transition-all shadow-sm">
                          <Mail size={20} />
                        </div>
                        <div>
-                         <p className="text-[9px] font-black uppercase tracking-widest text-nag-gray-deep opacity-40">Editorial Desk</p>
-                         <p className="text-base font-bold text-nag-black">briefing@mynigeria.news</p>
+                         <p className="text-[9px] font-black uppercase tracking-widest text-nag-green-primary mb-1">Editorial Desk</p>
+                         <p className="text-base font-bold text-nag-black tracking-tight">briefing@mynigeria.news</p>
                        </div>
                     </div>
                     <div className="flex items-center gap-4 group/item cursor-pointer">
-                       <div className="w-12 h-12 rounded-2xl bg-nag-gray-bg flex items-center justify-center text-nag-gray-deep group-hover/item:bg-nag-green-primary group-hover/item:text-white transition-all shadow-sm">
+                       <div className="w-12 h-12 rounded-2xl bg-white border border-nag-border flex items-center justify-center text-nag-gray-deep group-hover/item:bg-nag-green-primary group-hover/item:text-white transition-all shadow-sm">
                          <MapPin size={20} />
                        </div>
                        <div>
-                         <p className="text-[9px] font-black uppercase tracking-widest text-nag-gray-deep opacity-40">Headquarters</p>
-                         <p className="text-base font-bold text-nag-black">Ikoyi, Lagos, Nigeria</p>
+                         <p className="text-[9px] font-black uppercase tracking-widest text-nag-green-primary mb-1">Headquarters</p>
+                         <p className="text-base font-bold text-nag-black tracking-tight">Ikoyi, Lagos, Nigeria</p>
                        </div>
                     </div>
                  </div>
 
                  <div className="pt-8 border-t border-nag-border flex items-center gap-4">
-                    <button className="flex-1 bg-nag-black text-white py-4 rounded-xl font-black uppercase text-[10px] tracking-widest hover:bg-nag-green-primary transition-all">
+                    <button className="flex-1 bg-nag-black text-white py-4 rounded-xl font-black uppercase text-[10px] tracking-widest hover:bg-nag-green-primary transition-all shadow-lg shadow-black/10">
                       Subscribe Now
                     </button>
                     <div className="flex items-center gap-2">
                       {[Twitter, Facebook, Instagram, Linkedin].map((Icon, i) => (
-                        <button key={i} className="w-10 h-10 rounded-lg bg-nag-gray-bg flex items-center justify-center text-nag-gray-deep hover:text-nag-green-primary transition-colors">
+                        <button key={i} className="w-10 h-10 rounded-lg bg-white border border-nag-border flex items-center justify-center text-nag-gray-deep hover:text-nag-green-primary hover:border-nag-green-primary transition-all shadow-sm">
                           <Icon size={18} />
                         </button>
                       ))}
@@ -98,6 +98,7 @@ export function About() {
                </div>
             </div>
           </div>
+
         </div>
 
       </div>
