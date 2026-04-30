@@ -1,0 +1,12 @@
+{
+  "name": "MYNIGERIA.NEWS",
+  "description": "Nigeria's comprehensive portal for News, Marketplace, Government services, and Data Intelligence.",
+  "requestFramePermissions": [
+    "geolocation"
+  ],
+  "majorCapabilities": [
+    "news_aggregation",
+    "marketplace_listings",
+    "government_data_visualization"
+  ]
+}

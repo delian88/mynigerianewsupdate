@@ -1,0 +1,73 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Outfit:wght@400;500;600;700;900&display=swap');
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Outfit", sans-serif;
+  
+  --color-nag-green-primary: #008751;
+  --color-nag-green-secondary: #00A86B;
+  --color-nag-white: #FFFFFF;
+  --color-nag-black: #000000;
+  --color-nag-gray-bg: #F3F4F6;
+  --color-nag-gray-deep: #333333;
+  --color-nag-gray-light: #E5E5E5;
+  --color-nag-border: #E5E7EB;
+  --color-nag-red: #DC2626;
+}
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    @apply font-sans bg-nag-gray-bg text-nag-black antialiased overflow-x-hidden;
+  }
+}
+
+@utility pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+@utility pt-safe {
+  padding-top: env(safe-area-inset-top);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.markdown-body {
+  @apply prose prose-slate max-w-none;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  height: 4px;
+  width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  @apply bg-nag-green-primary/20 rounded-full;
+}
+
+.mask-gradient-x {
+  mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+}
+
+@utility container-nag {
+  max-width: 1440px;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+}
