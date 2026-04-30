@@ -21,15 +21,31 @@ export interface NewsItem {
   isBreaking?: boolean;
 }
 
-export interface ListingItem {
+export interface MarketplaceBaseItem {
   id: string;
   title: string;
   price: string;
+  priceVal: number;
   location: string;
-  type: 'cars' | 'property' | 'jobs';
-  image: string;
-  badge?: string;
+  badge: string;
+  img: string;
 }
+
+export interface AutomotiveItem extends MarketplaceBaseItem {
+  year: number;
+  model: string;
+}
+
+export interface RealEstateItem extends MarketplaceBaseItem {
+  type: 'Buy' | 'Rent' | 'Commercial';
+  bedrooms: number;
+}
+
+export interface CareerItem extends MarketplaceBaseItem {
+  sector: string;
+}
+
+export type MarketplaceItem = AutomotiveItem | RealEstateItem | CareerItem;
 
 export interface GovService {
   id: string;
@@ -37,3 +53,4 @@ export interface GovService {
   icon: string;
   description: string;
 }
+

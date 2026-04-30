@@ -8,14 +8,14 @@ export function SpecialReports() {
       category: 'Investigation',
       desc: 'An 8-month deep dive into mining operations across Northern Nigeria and the impact on local ecosystems.',
       author: 'Adebayo Tiamiyu',
-      img: 'https://images.unsplash.com/photo-1576085898323-218339e3b435?q=80&w=800&fit=crop'
+      img: 'https://media.istockphoto.com/id/2181114788/photo/3d-illustration-of-lithium-ion-battery-packs-on-a-production-line-in-a-manufacturing-facility.webp?a=1&b=1&s=612x612&w=0&k=20&c=nrrtG5CskFXp19TF8Qw5V9Y0DhWjPyVpJbSd-r1rXFY='
     },
     {
       title: 'Urban Resilience: Lagos 2050 Infrastructure Roadmap',
       category: 'In-Depth',
       desc: 'Analyzing the strategic urban planning projects aimed at making Lagos a global megacity by mid-century.',
       author: 'Chioma Okereke',
-      img: 'https://images.unsplash.com/photo-1541888946425-d81bb19480c5?q=80&w=800&fit=crop'
+      img: 'https://images.unsplash.com/photo-1618828665011-0abd973f7bb8?w=700&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8bGFnb3MlMjBuaWdlcmlhfGVufDB8fDB8fHww'
     }
   ];
 
@@ -37,18 +37,18 @@ export function SpecialReports() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           {reports.map((report, i) => (
-            <motion.div 
+            <motion.div
               key={i}
               whileHover={{ y: -10 }}
               className="group relative h-[500px] md:h-[600px] rounded-[40px] overflow-hidden cursor-pointer"
             >
-              <img 
-                src={report.img} 
-                alt={report.title} 
-                className="absolute inset-0 w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 group-hover:scale-105" 
+              <img
+                src={report.img}
+                alt={report.title}
+                className="absolute inset-0 w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 group-hover:scale-105"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-nag-black via-nag-black/40 to-transparent"></div>
-              
+
               <div className="absolute inset-0 p-8 md:p-12 flex flex-col justify-between z-10">
                 <div className="flex justify-between items-start">
                   <span className="px-4 py-2 rounded-xl bg-nag-green-primary/20 backdrop-blur-md border border-nag-green-primary/30 text-nag-green-primary text-[10px] font-black uppercase tracking-widest">
@@ -82,19 +82,19 @@ export function SpecialReports() {
         </div>
 
         <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8">
-           {[
-             { icon: BookOpen, title: 'Archived Dossiers', desc: 'Access 2,000+ deep-dive investigative files recorded since 2018.' },
-             { icon: Zap, title: 'Real-time Pulse', desc: 'Live data visualizations for trending national security & fiscal indices.' },
-             { icon: Shield, title: 'Vetted Evidence', desc: 'Our rigorous internal review process ensures multi-source verification.' }
-           ].map((item, i) => (
-             <div key={i} className="p-8 rounded-3xl bg-nag-gray-bg border border-nag-border hover:border-nag-green-primary/30 transition-all group">
-                <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center text-nag-green-primary mb-6 shadow-sm group-hover:bg-nag-green-primary group-hover:text-white transition-all">
-                  <item.icon size={22} />
-                </div>
-                <h4 className="font-black text-xl tracking-tight mb-3 uppercase">{item.title}</h4>
-                <p className="text-nag-gray-deep font-medium opacity-60 text-sm leading-relaxed">{item.desc}</p>
-             </div>
-           ))}
+          {[
+            { icon: BookOpen, title: 'Archived Dossiers', desc: 'Access 2,000+ deep-dive investigative files recorded since 2018.' },
+            { icon: Zap, title: 'Real-time Pulse', desc: 'Live data visualizations for trending national security & fiscal indices.' },
+            { icon: Shield, title: 'Vetted Evidence', desc: 'Our rigorous internal review process ensures multi-source verification.' }
+          ].map((item, i) => (
+            <div key={i} className="p-8 rounded-3xl bg-nag-gray-bg border border-nag-border hover:border-nag-green-primary/30 transition-all group">
+              <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center text-nag-green-primary mb-6 shadow-sm group-hover:bg-nag-green-primary group-hover:text-white transition-all">
+                <item.icon size={22} />
+              </div>
+              <h4 className="font-black text-xl tracking-tight mb-3 uppercase">{item.title}</h4>
+              <p className="text-nag-gray-deep font-medium opacity-60 text-sm leading-relaxed">{item.desc}</p>
+            </div>
+          ))}
         </div>
       </div>
     </section>

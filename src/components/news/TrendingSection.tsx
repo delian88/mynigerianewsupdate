@@ -20,7 +20,7 @@ export function TrendingSection() {
       reads: "12,801 reads",
       category: "Business",
       excerpt: "Local production reaches a milestone as the first batch of refined petroleum products leaves the Lekki Free Trade Zone for international markets.",
-      image: "https://images.unsplash.com/photo-1537122905058-29cf9009a397?auto=format&fit=crop&q=80&w=1200"
+      image: "https://images.unsplash.com/photo-1768564206500-5cddb1fea679?w=700&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTZ8fGluZHVzdHJpYWwlMjBjb21wbGV4fGVufDB8fDB8fHww"
     },
     {
       id: "03",
@@ -77,7 +77,7 @@ export function TrendingSection() {
   return (
     <section className="w-full py-8 md:py-12 bg-white border-b border-nag-border overflow-hidden">
       <div className="container-nag px-6 md:px-12 grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-12">
-        
+
         {/* Left: Trending & Most Read Carousel */}
         <div className="lg:col-span-8 flex flex-col">
           <div className="flex items-center justify-between mb-6 md:mb-8 border-b border-nag-border pb-4">
@@ -87,27 +87,27 @@ export function TrendingSection() {
               </div>
               <h2 className="text-xl md:text-2xl font-display font-black tracking-tighter uppercase">Trending & Most Read</h2>
             </div>
-            
+
             <div className="flex items-center gap-2">
-               <button 
-                 onClick={() => setActiveIndex((prev) => (prev - 1 + trendingStories.length) % trendingStories.length)}
-                 className="p-2 rounded-full bg-nag-gray-bg hover:bg-nag-green-primary hover:text-white transition-all shadow-sm"
-               >
-                 <ArrowLeft size={16} />
-               </button>
-               <button 
-                 onClick={() => setActiveIndex((prev) => (prev + 1) % trendingStories.length)}
-                 className="p-2 rounded-full bg-nag-gray-bg hover:bg-nag-green-primary hover:text-white transition-all shadow-sm"
-               >
-                 <ArrowRight size={16} />
-               </button>
+              <button
+                onClick={() => setActiveIndex((prev) => (prev - 1 + trendingStories.length) % trendingStories.length)}
+                className="p-2 rounded-full bg-nag-gray-bg hover:bg-nag-green-primary hover:text-white transition-all shadow-sm"
+              >
+                <ArrowLeft size={16} />
+              </button>
+              <button
+                onClick={() => setActiveIndex((prev) => (prev + 1) % trendingStories.length)}
+                className="p-2 rounded-full bg-nag-gray-bg hover:bg-nag-green-primary hover:text-white transition-all shadow-sm"
+              >
+                <ArrowRight size={16} />
+              </button>
             </div>
           </div>
 
           <div className="relative h-[320px] md:h-[400px] flex items-center rounded-3xl overflow-hidden border border-nag-border">
             {/* Dynamic Background Image */}
             <AnimatePresence>
-              <motion.div 
+              <motion.div
                 key={`bg-${activeIndex}`}
                 initial={{ opacity: 0, scale: 1.1 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -115,9 +115,9 @@ export function TrendingSection() {
                 transition={{ duration: 1.2, ease: [0.4, 0, 0.2, 1] }}
                 className="absolute inset-0 z-0"
               >
-                <img 
-                  src={trendingStories[activeIndex].image} 
-                  alt="" 
+                <img
+                  src={trendingStories[activeIndex].image}
+                  alt=""
                   className="w-full h-full object-cover"
                   referrerPolicy="no-referrer"
                 />
@@ -126,7 +126,7 @@ export function TrendingSection() {
             </AnimatePresence>
 
             <AnimatePresence mode="wait">
-              <motion.div 
+              <motion.div
                 key={activeIndex}
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -147,16 +147,16 @@ export function TrendingSection() {
                         {trendingStories[activeIndex].title}
                       </h3>
                     </div>
-                    
+
                     <p className="text-white/60 text-sm md:text-base font-medium leading-relaxed max-w-2xl line-clamp-2 md:line-clamp-3">
                       {trendingStories[activeIndex].excerpt}
                     </p>
 
                     <div className="flex items-center gap-6 text-[10px] md:text-xs font-black uppercase tracking-widest">
-                       <span className="text-white/40">{trendingStories[activeIndex].reads}</span>
-                       <button className="flex items-center gap-2 text-nag-green-primary hover:gap-3 transition-all">
-                         Read Insight <ChevronRight size={14} />
-                       </button>
+                      <span className="text-white/40">{trendingStories[activeIndex].reads}</span>
+                      <button className="flex items-center gap-2 text-nag-green-primary hover:gap-3 transition-all">
+                        Read Insight <ChevronRight size={14} />
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -167,7 +167,7 @@ export function TrendingSection() {
           {/* Pagination Indicators */}
           <div className="flex items-center gap-2 mt-auto pt-6 mb-8">
             {trendingStories.map((_, i) => (
-              <button 
+              <button
                 key={i}
                 onClick={() => setActiveIndex(i)}
                 className={`h-1 transition-all rounded-full ${activeIndex === i ? 'w-8 bg-nag-green-primary' : 'w-2 bg-nag-border hover:bg-nag-gray-deep'}`}
@@ -176,31 +176,31 @@ export function TrendingSection() {
           </div>
 
           {/* Compact Newsletter CTA Moved Here */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, scale: 0.98 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
             className="bg-nag-black rounded-3xl p-6 md:p-8 text-white relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-6"
           >
-             <div className="relative z-10 space-y-2 max-w-xl">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="w-8 h-8 rounded-lg bg-nag-green-primary/20 flex items-center justify-center text-nag-green-primary">
-                    <CheckCircle size={16} />
-                  </div>
-                  <h4 className="font-display font-black text-xl tracking-tight uppercase">Stay Briefed.</h4>
+            <div className="relative z-10 space-y-2 max-w-xl">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-8 h-8 rounded-lg bg-nag-green-primary/20 flex items-center justify-center text-nag-green-primary">
+                  <CheckCircle size={16} />
                 </div>
-                <p className="text-xs text-white/50 font-medium leading-relaxed">
-                  Strategic intelligence delivered to your inbox every morning. Join 50,000+ decision makers who start their day with The Collective.
-                </p>
-             </div>
-             
-             <div className="relative z-10 flex-shrink-0">
-               <button className="px-8 py-4 bg-nag-green-primary rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-nag-green-secondary transition-all shadow-lg shadow-nag-green-primary/20">
-                 Join the Collective
-               </button>
-             </div>
-             
-             <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-nag-green-primary/10 rounded-full blur-3xl"></div>
+                <h4 className="font-display font-black text-xl tracking-tight uppercase">Stay Briefed.</h4>
+              </div>
+              <p className="text-xs text-white/50 font-medium leading-relaxed">
+                Strategic intelligence delivered to your inbox every morning. Join 50,000+ decision makers who start their day with The Collective.
+              </p>
+            </div>
+
+            <div className="relative z-10 flex-shrink-0">
+              <button className="px-8 py-4 bg-nag-green-primary rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-nag-green-secondary transition-all shadow-lg shadow-nag-green-primary/20">
+                Join the Collective
+              </button>
+            </div>
+
+            <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-nag-green-primary/10 rounded-full blur-3xl"></div>
           </motion.div>
         </div>
 
@@ -212,23 +212,23 @@ export function TrendingSection() {
 
           <div className="space-y-4 md:space-y-5">
             {mustRead.map((item, i) => (
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
-                key={i} 
+                key={i}
                 className={`group p-5 md:p-6 rounded-2xl bg-nag-gray-bg border-l-4 ${item.color} hover:bg-white hover:shadow-xl transition-all cursor-pointer relative overflow-hidden`}
               >
                 <div className="flex items-center gap-2 mb-3">
                   <span className="text-base">{item.icon}</span>
                   <span className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-nag-black opacity-80">{item.type}</span>
                 </div>
-                
+
                 <h3 className="text-sm md:text-base font-bold leading-tight mb-4 group-hover:text-nag-green-primary transition-colors tracking-tight">
                   {item.title}
                 </h3>
-                
+
                 <div className="flex items-center justify-between pt-4 border-t border-nag-border/50">
                   <div className="text-[9px] md:text-[10px] space-y-0.5">
                     <p className="font-black text-nag-black">{item.author}</p>

@@ -8,9 +8,9 @@ export function HeroSection() {
         {/* Main Feature */}
         <div className="lg:col-span-8 group relative overflow-hidden rounded-2xl bg-white shadow-xl border border-nag-border flex flex-col min-h-[350px] md:min-h-[400px]">
           <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent z-10 pointer-events-none"></div>
-          <img 
-            src="https://images.unsplash.com/photo-1605342674149-6a84f3ccfa4b?q=80&w=1600&auto=format&fit=crop" 
-            alt="Lagos Urban Architecture" 
+          <img
+            src="https://images.unsplash.com/photo-1749058387715-1efad0eadc8c?w=700&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fGxhZ29zJTIwbmlnZXJpYXxlbnwwfHwwfHx8MA%3D%3D"
+            alt="Lagos Urban Architecture"
             className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
           />
           <div className="absolute bottom-0 left-0 p-6 md:p-12 z-20 w-full space-y-3 md:space-y-4">
@@ -30,12 +30,12 @@ export function HeroSection() {
         <div className="lg:col-span-4 flex flex-col gap-4 md:gap-6 overflow-hidden">
           {[
             { tag: 'Government', title: 'Senate finalizes new minimum wage structure for civil servants', time: '45m ago', img: 'https://images.unsplash.com/photo-1542744094-24638eff58bb?q=80&w=600&fit=crop' },
-            { tag: 'Intelligence', title: "Energy Report: Nigeria's domestic refining capacity projected to double by 2025", time: '1h ago', img: 'https://images.unsplash.com/photo-1449156003716-e564d262ff25?q=80&w=600&fit=crop' },
+            { tag: 'Intelligence', title: "Energy Report: Nigeria's domestic refining capacity projected to double by 2025", time: '1h ago', img: 'https://images.unsplash.com/photo-1546878347-4d35c66bc4c3?w=700&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8b2lsJTIwcmVmaW5hcnl8ZW58MHx8MHx8fDA%3D' },
             { tag: 'Economy', title: 'Infrastructure: Major upgrades commissioned for Port Harcourt Sea Port terminals', time: '3h ago', img: 'https://images.unsplash.com/photo-1494412651409-8963ce7935a7?q=80&w=600&fit=crop' }
           ].map((item, i) => (
             <div key={i} className="bg-white rounded-2xl p-4 md:p-5 border border-nag-border flex gap-4 md:gap-5 hover:shadow-xl transition-all cursor-pointer group flex-1">
               <div className="relative shrink-0 w-24 sm:w-32 h-24 sm:h-auto overflow-hidden rounded-xl bg-gray-100 border border-nag-gray-light">
-                 <img src={item.img} alt={item.title} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-transform group-hover:scale-110 duration-700" />
+                <img src={item.img} alt={item.title} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-transform group-hover:scale-110 duration-700" />
               </div>
               <div className="flex flex-col justify-between py-0.5 md:py-1 flex-1">
                 <span className="text-[8px] md:text-[9px] font-black text-nag-green-primary uppercase tracking-[0.2em] leading-none mb-1 md:mb-2">{item.tag}</span>

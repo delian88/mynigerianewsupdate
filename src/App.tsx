@@ -43,7 +43,7 @@ export default function App() {
              <div className="container-nag px-6 md:px-12">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
                 {[
-                  { icon: PlayCircle, title: 'Original Videos', color: 'text-nag-red', count: 'Latest Releases', img: 'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3N2Zzh6ZzV6ZzV6ZzV6ZzV6ZzV6ZzV6ZzV6ZzV6ZzV6ZzV6JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1n/3o7TKMGpxoY8E0X98k/giphy.gif' },
+                  { icon: PlayCircle, title: 'Original Videos', color: 'text-nag-red', count: 'Latest Releases', img: 'https://images.unsplash.com/photo-1492724441997-5dc865305da7?q=80&w=600&fit=crop' },
                   { icon: Radio, title: 'Podcasts', color: 'text-nag-green-primary', count: 'Daily Briefings', img: 'https://images.unsplash.com/photo-1590602847861-f357a9332bbc?q=80&w=600&fit=crop' },
                   { icon: Layers, title: 'Infographics', color: 'text-blue-600', count: 'Data Visuals', img: 'https://images.unsplash.com/photo-1543286386-713bdd548da4?q=80&w=600&fit=crop' },
                   { icon: Newspaper, title: 'Photo Stories', color: 'text-purple-600', count: 'Visual News', img: 'https://images.unsplash.com/photo-1504711432869-efd597cdd04d?q=80&w=600&fit=crop' }

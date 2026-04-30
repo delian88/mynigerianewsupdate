@@ -36,10 +36,10 @@ export function Header({ showIntelligence, setShowIntelligence }: { showIntellig
 
         {/* Action Icons */}
         <div className="flex items-center gap-3 md:gap-6 shrink-0">
-          <button id="search-trigger" className="text-gray-500 hover:text-nag-green-primary transition-colors p-2">
+          <button id="search-trigger" aria-label="Open search" className="text-gray-500 hover:text-nag-green-primary transition-colors p-2">
             <Search size={18} />
           </button>
-          <button id="notifications-trigger" className="relative text-gray-500 hover:text-nag-green-primary transition-colors p-2 hidden sm:block">
+          <button id="notifications-trigger" aria-label="View notifications" className="relative text-gray-500 hover:text-nag-green-primary transition-colors p-2 hidden sm:block">
             <Bell size={18} />
             <span className="absolute top-1 right-1 w-2 h-2 bg-nag-red border-2 border-white rounded-full"></span>
           </button>
