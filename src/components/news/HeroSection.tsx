@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Clock, ChevronRight, Eye, Tag } from 'lucide-react';
+import { Clock, ChevronRight, Eye, Tag, Calendar } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useArticles } from '../../hooks/useArticles';
 import { ArticleModal } from './ArticleModal';
@@ -17,6 +17,18 @@ function timeAgo(iso: string): string {
     return `${days}d ago`;
   } catch {
     return '';
+  }
+}
+
+function formatShortDate(iso: string): string {
+  try {
+    return new Date(iso).toLocaleDateString('en-NG', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    });
+  } catch {
+    return iso;
   }
 }
 
@@ -104,7 +116,8 @@ export function HeroSection() {
                         {timeAgo(heroArticle.published_at)}
                       </span>
                       <span className="text-nag-green-secondary hidden sm:inline">•</span>
-                      <span className="text-white/50 text-[9px]">
+                      <span className="flex items-center gap-1.5 text-white/50 text-[9px]">
+                        <Calendar size={10} />
                         {new Date(heroArticle.published_at).toLocaleDateString('en-NG', {
                           day: 'numeric', month: 'long', year: 'numeric',
                         })}
@@ -177,10 +190,15 @@ export function HeroSection() {
                     <h3 className="text-sm md:text-base font-bold leading-tight group-hover:text-nag-green-primary transition-colors line-clamp-2 sm:line-clamp-3 tracking-tight">
                       {title}
                     </h3>
-                    <div className="flex items-center gap-3 mt-1 md:mt-2">
+                    <div className="flex flex-col gap-1 mt-1 md:mt-2">
                       <span className="text-[9px] md:text-[10px] font-bold text-gray-400 italic flex items-center gap-1">
                         <Clock size={10} /> {timeLabel}
                       </span>
+                      {isReal && (
+                        <span className="text-[9px] font-semibold text-gray-400 flex items-center gap-1">
+                          <Calendar size={9} /> {formatShortDate((item as Article).published_at)}
+                        </span>
+                      )}
                       {isReal && (
                         <span className="text-[9px] font-bold text-gray-400 flex items-center gap-1">
                           <Eye size={10} /> {((item as Article).view_count || 0).toLocaleString()}

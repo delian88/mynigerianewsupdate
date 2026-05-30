@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Clock, Eye, ExternalLink, Tag } from 'lucide-react';
+import { X, Clock, Eye, ExternalLink, Tag, Calendar } from 'lucide-react';
 import type { Article } from '../../hooks/useArticles';
 
 interface ArticleModalProps {
@@ -132,7 +132,7 @@ export function ArticleModal({ article, onClose }: ArticleModalProps) {
 
                 {/* Date */}
                 <p className="text-xs text-gray-400 font-medium mb-8 flex items-center gap-2">
-                  <Clock size={12} />
+                  <Calendar size={12} />
                   Published: {formatDate(article.published_at)}
                 </p>
 

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { TrendingUp, CheckCircle, Bookmark, Share2, ChevronRight, ArrowLeft, ArrowRight, Clock, Eye } from 'lucide-react';
+import { TrendingUp, CheckCircle, Bookmark, Share2, ChevronRight, ArrowLeft, ArrowRight, Clock, Eye, Calendar } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useArticles } from '../../hooks/useArticles';
 import { ArticleModal } from './ArticleModal';
@@ -186,10 +186,16 @@ export function TrendingSection() {
 
                       {/* Meta row: date + views + CTA */}
                       <div className="flex items-center gap-4 flex-wrap text-[10px] md:text-xs font-black uppercase tracking-widest">
-                        {/* Date */}
+                        {/* Relative time */}
                         <span className="flex items-center gap-1.5 text-white/50">
                           <Clock size={11} />
                           {current ? timeAgo(current.published_at) : ''}
+                        </span>
+
+                        {/* Actual date */}
+                        <span className="flex items-center gap-1.5 text-white/40">
+                          <Calendar size={11} />
+                          {current ? formatShortDate(current.published_at) : ''}
                         </span>
 
                         {/* Views */}
@@ -246,6 +252,7 @@ export function TrendingSection() {
                       <p className="text-sm font-bold text-nag-black line-clamp-2 group-hover:text-nag-green-primary transition-colors tracking-tight">{article.title}</p>
                       <div className="flex items-center gap-3 mt-1 text-[10px] text-gray-400 font-medium">
                         <span className="flex items-center gap-1"><Clock size={9} /> {timeAgo(article.published_at)}</span>
+                        <span className="flex items-center gap-1"><Calendar size={9} /> {formatShortDate(article.published_at)}</span>
                         <span className="flex items-center gap-1"><Eye size={9} /> {(article.view_count || 0).toLocaleString()}</span>
                       </div>
                     </div>
@@ -330,7 +337,8 @@ export function TrendingSection() {
                     <span className="text-[9px] font-black text-nag-green-primary uppercase tracking-widest">{article.category}</span>
                     <p className="text-sm font-bold text-nag-black line-clamp-2 group-hover:text-nag-green-primary transition-colors">{article.title}</p>
                     <div className="flex items-center gap-3 mt-1 text-[10px] text-gray-400">
-                      <span className="flex items-center gap-1"><Clock size={9} /> {formatShortDate(article.published_at)}</span>
+                      <span className="flex items-center gap-1"><Clock size={9} /> {timeAgo(article.published_at)}</span>
+                      <span className="flex items-center gap-1"><Calendar size={9} /> {formatShortDate(article.published_at)}</span>
                       <span className="flex items-center gap-1"><Eye size={9} /> {(article.view_count || 0).toLocaleString()}</span>
                     </div>
                   </div>
