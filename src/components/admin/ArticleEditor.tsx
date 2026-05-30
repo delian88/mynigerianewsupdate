@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '../../lib/supabase';
+import { supabase, supabaseAdmin } from '../../lib/supabase';
 import toast from 'react-hot-toast';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -90,7 +90,7 @@ export default function ArticleEditor() {
   const handleDelete = async (id: string) => {
     if (!window.confirm('Are you sure you want to delete this article?')) return;
     try {
-      const { error } = await supabase.from('articles').delete().eq('id', id);
+      const { error } = await supabaseAdmin.from('articles').delete().eq('id', id);
       if (error) throw error;
       toast.success('Article deleted');
       fetchArticles();
@@ -107,10 +107,10 @@ export default function ArticleEditor() {
       const payload = { ...editingArticle, content };
 
       if (editingArticle.id) {
-        const { error } = await supabase.from('articles').update(payload).eq('id', editingArticle.id);
+        const { error } = await supabaseAdmin.from('articles').update(payload).eq('id', editingArticle.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from('articles').insert([payload]);
+        const { error } = await supabaseAdmin.from('articles').insert([payload]);
         if (error) throw error;
       }
       toast.success('Article saved');
@@ -136,10 +136,10 @@ export default function ArticleEditor() {
         const fileName = `article-${Math.random()}.${fileExt}`;
         const filePath = `articles/${fileName}`;
 
-        const { error } = await supabase.storage.from('media').upload(filePath, file);
+        const { error } = await supabaseAdmin.storage.from('media').upload(filePath, file);
         if (error) throw error;
 
-        const { data: { publicUrl } } = supabase.storage.from('media').getPublicUrl(filePath);
+        const { data: { publicUrl } } = supabaseAdmin.storage.from('media').getPublicUrl(filePath);
         
         editor?.chain().focus().setImage({ src: publicUrl }).run();
         toast.success('Image added', { id: 'img-upload' });

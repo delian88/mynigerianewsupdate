@@ -12,12 +12,14 @@ import { TrendingSection } from '../components/news/TrendingSection';
 import { SpecialReports } from '../components/news/SpecialReports';
 import { MarketplaceHub } from '../components/marketplace/MarketplaceHub';
 import { GovernmentDashboard } from '../components/gov/GovernmentDashboard';
+import { PodcastModal } from '../components/news/PodcastModal';
 import { Newspaper, Radio, PlayCircle, Layers, Globe, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
 import { motion } from 'motion/react';
 
 export default function PublicSite() {
   const [showIntelligence, setShowIntelligence] = useState(false);
+  const [isPodcastOpen, setIsPodcastOpen] = useState(false);
 
   return (
     <div className="min-h-screen flex flex-col font-sans selection:bg-nag-green-primary selection:text-white bg-nag-gray-bg">
@@ -94,6 +96,11 @@ export default function PublicSite() {
                     }}
                     whileHover={{ y: -12, scale: 1.02 }}
                     key={i} 
+                    onClick={() => {
+                      if (item.title === 'Podcasts') {
+                        setIsPodcastOpen(true);
+                      }
+                    }}
                     className="group relative h-[420px] md:h-[460px] rounded-[40px] overflow-hidden bg-white border border-nag-border hover:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.12)] hover:border-nag-green-primary/30 transition-all duration-700 cursor-pointer flex flex-col"
                   >
                     {/* Top Image Section */}
@@ -234,6 +241,7 @@ export default function PublicSite() {
       </main>
 
       <Footer />
+      <PodcastModal isOpen={isPodcastOpen} onClose={() => setIsPodcastOpen(false)} />
     </div>
   );
 }

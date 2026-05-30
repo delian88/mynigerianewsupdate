@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '../../lib/supabase';
+import { supabase, supabaseAdmin } from '../../lib/supabase';
 import toast from 'react-hot-toast';
-import { Plus, Trash2, Save, Loader2, ArrowLeft, Upload, Radio } from 'lucide-react';
+import { Plus, Trash2, Save, Loader2, ArrowLeft, Upload, Radio, Edit2 } from 'lucide-react';
 
 export default function PodcastEditor() {
   const [podcasts, setPodcasts] = useState<any[]>([]);
@@ -32,7 +32,7 @@ export default function PodcastEditor() {
   const handleDelete = async (id: string) => {
     if (!window.confirm('Are you sure you want to delete this podcast?')) return;
     try {
-      const { error } = await supabase.from('podcasts').delete().eq('id', id);
+      const { error } = await supabaseAdmin.from('podcasts').delete().eq('id', id);
       if (error) throw error;
       toast.success('Podcast deleted');
       fetchPodcasts();
@@ -48,10 +48,10 @@ export default function PodcastEditor() {
     try {
       setSaving(true);
       if (editingPodcast.id) {
-        const { error } = await supabase.from('podcasts').update(editingPodcast).eq('id', editingPodcast.id);
+        const { error } = await supabaseAdmin.from('podcasts').update(editingPodcast).eq('id', editingPodcast.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from('podcasts').insert([editingPodcast]);
+        const { error } = await supabaseAdmin.from('podcasts').insert([editingPodcast]);
         if (error) throw error;
       }
       toast.success('Podcast saved');
@@ -74,10 +74,10 @@ export default function PodcastEditor() {
 
       toast.loading(`Uploading ${type}...`, { id: 'upload' });
 
-      const { error: uploadError } = await supabase.storage.from('media').upload(filePath, file);
+      const { error: uploadError } = await supabaseAdmin.storage.from('media').upload(filePath, file);
       if (uploadError) throw uploadError;
 
-      const { data: { publicUrl } } = supabase.storage.from('media').getPublicUrl(filePath);
+      const { data: { publicUrl } } = supabaseAdmin.storage.from('media').getPublicUrl(filePath);
 
       setEditingPodcast((prev: any) => ({
         ...prev,

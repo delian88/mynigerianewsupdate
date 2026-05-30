@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '../../lib/supabase';
+import { supabase, supabaseAdmin } from '../../lib/supabase';
 import toast from 'react-hot-toast';
 import { Upload, Save, Loader2 } from 'lucide-react';
 
@@ -41,13 +41,13 @@ export default function SettingsEditor() {
 
       toast.loading('Uploading logo...', { id: 'upload' });
 
-      const { error: uploadError } = await supabase.storage
+      const { error: uploadError } = await supabaseAdmin.storage
         .from('media')
         .upload(filePath, file);
 
       if (uploadError) throw uploadError;
 
-      const { data: { publicUrl } } = supabase.storage
+      const { data: { publicUrl } } = supabaseAdmin.storage
         .from('media')
         .getPublicUrl(filePath);
 
@@ -62,10 +62,10 @@ export default function SettingsEditor() {
     try {
       setSaving(true);
       if (settings.id) {
-        const { error } = await supabase.from('site_settings').update(settings).eq('id', settings.id);
+        const { error } = await supabaseAdmin.from('site_settings').update(settings).eq('id', settings.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from('site_settings').insert([settings]);
+        const { error } = await supabaseAdmin.from('site_settings').insert([settings]);
         if (error) throw error;
       }
       toast.success('Settings saved successfully');
