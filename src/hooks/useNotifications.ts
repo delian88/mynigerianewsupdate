@@ -19,13 +19,64 @@ export function useNotifications() {
   const fetchNotifications = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      
+      // 1. Fetch real notifications from the table
+      const { data: dbNotifs, error: notifErr } = await supabase
         .from('notifications')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      setNotifications(data || []);
+      if (notifErr) throw notifErr;
+
+      // 2. Fetch recent articles
+      const { data: articles } = await supabase
+        .from('articles')
+        .select('id, title, category, published_at, created_at')
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      // 3. Fetch recent profiles (users)
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, email, role, created_at')
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      // Filter out mock seeded notifications from dbNotifs
+      const realDbNotifs = (dbNotifs || []).filter(n => 
+        !n.message.includes('john.doe@example.com') &&
+        !n.message.includes('civil servants') &&
+        !n.message.includes('AWS S3') &&
+        !n.message.includes('reported') &&
+        !n.title.includes('Breaking news ticker updated')
+      );
+
+      // Generate dynamic notifications from actual articles in the DB
+      const articleNotifs = (articles || []).map(art => ({
+        id: `art-${art.id}`,
+        title: 'New article published',
+        message: art.title,
+        type: 'article' as const,
+        read: true,
+        created_at: art.published_at || art.created_at
+      }));
+
+      // Generate dynamic notifications from actual user profiles in the DB
+      const profileNotifs = (profiles || []).map(prof => ({
+        id: `prof-${prof.id}`,
+        title: 'New user registered',
+        message: `${prof.email} signed up`,
+        type: 'user' as const,
+        read: true,
+        created_at: prof.created_at
+      }));
+
+      // Combine all real, dynamic elements and sort by date descending
+      const combined = [...realDbNotifs, ...articleNotifs, ...profileNotifs]
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+        .slice(0, 15);
+
+      setNotifications(combined);
     } catch (err) {
       console.error('Error fetching notifications:', err);
     } finally {
