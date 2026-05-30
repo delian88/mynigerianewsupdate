@@ -1,7 +1,10 @@
 import { motion } from 'motion/react';
 import { Mail, Globe, MapPin, Twitter, Facebook, Instagram, Linkedin } from 'lucide-react';
+import { useSiteSettings } from '../../hooks/useSiteSettings';
 
 export function About() {
+  const { settings } = useSiteSettings();
+
   return (
     <section id="about" className="py-24 bg-nag-gray-bg w-full border-t border-nag-border">
       <div className="container-nag px-6 md:px-12">
@@ -17,8 +20,8 @@ export function About() {
               </h2>
             </div>
             
-            <p className="text-nag-black text-xl md:text-2xl font-medium leading-relaxed max-w-3xl">
-              MyNigeria.News is Nigeria's premier strategic editorial collective, unifying regional excellence with national intelligence.
+            <p className="text-nag-black text-xl md:text-2xl font-medium leading-relaxed max-w-3xl whitespace-pre-wrap">
+              {settings?.about_us_text || "MyNigeria.News is Nigeria's premier strategic editorial collective, unifying regional excellence with national intelligence."}
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 pt-8">
@@ -69,7 +72,7 @@ export function About() {
                        </div>
                        <div>
                          <p className="text-[9px] font-black uppercase tracking-widest text-nag-green-primary mb-1">Editorial Desk</p>
-                         <p className="text-base font-bold text-nag-black tracking-tight">briefing@mynigeria.news</p>
+                         <p className="text-base font-bold text-nag-black tracking-tight">{settings?.contact_email || 'briefing@mynigeria.news'}</p>
                        </div>
                     </div>
                     <div className="flex items-center gap-4 group/item cursor-pointer">
@@ -78,7 +81,7 @@ export function About() {
                        </div>
                        <div>
                          <p className="text-[9px] font-black uppercase tracking-widest text-nag-green-primary mb-1">Headquarters</p>
-                         <p className="text-base font-bold text-nag-black tracking-tight">Ikoyi, Lagos, Nigeria</p>
+                         <p className="text-base font-bold text-nag-black tracking-tight">{settings?.contact_address || 'Ikoyi, Lagos, Nigeria'}</p>
                        </div>
                     </div>
                  </div>

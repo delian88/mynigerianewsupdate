@@ -21,6 +21,20 @@ export interface NewsItem {
   isBreaking?: boolean;
 }
 
+export interface DBArticle {
+  id: string;
+  title: string;
+  content: string;
+  excerpt?: string;
+  cover_image_url: string | null;
+  category: string;
+  source_url?: string | null;
+  published_at: string;
+  created_at: string;
+  view_count: number;
+}
+
+
 export interface MarketplaceBaseItem {
   id: string;
   title: string;

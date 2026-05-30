@@ -1,9 +1,11 @@
 import { Search, Bell, User, Menu, X, ChevronDown, Rocket, ExternalLink, Globe, TrendingUp, TrendingDown, Activity, BarChart3 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { useSiteSettings } from '../../hooks/useSiteSettings';
 
 export function Header({ showIntelligence, setShowIntelligence }: { showIntelligence: boolean, setShowIntelligence: (val: boolean) => void }) {
   const [isScrolled, setIsScrolled] = useState(false);
+  const { settings } = useSiteSettings();
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
@@ -26,12 +28,18 @@ export function Header({ showIntelligence, setShowIntelligence }: { showIntellig
 
         {/* Logo (Centered) */}
         <a href="#news" className="flex absolute left-1/2 -translate-x-1/2 items-center gap-2 md:gap-3 cursor-pointer group shrink-0">
-          <div className="w-8 h-8 md:w-10 md:h-10 bg-nag-green-primary rounded flex items-center justify-center transition-transform group-hover:scale-105">
-            <span className="text-white font-bold text-base md:text-xl font-display">N</span>
-          </div>
-          <span className="font-display font-black text-lg md:text-2xl tracking-tighter text-nag-black leading-none whitespace-nowrap">
-            MYNIGERIA<span className="text-nag-green-primary">.NEWS</span>
-          </span>
+          {settings?.logo_url ? (
+            <img src={settings.logo_url} alt="Site Logo" className="h-8 md:h-10 object-contain transition-transform group-hover:scale-105" />
+          ) : (
+            <>
+              <div className="w-8 h-8 md:w-10 md:h-10 bg-nag-green-primary rounded flex items-center justify-center transition-transform group-hover:scale-105">
+                <span className="text-white font-bold text-base md:text-xl font-display">N</span>
+              </div>
+              <span className="font-display font-black text-lg md:text-2xl tracking-tighter text-nag-black leading-none whitespace-nowrap">
+                MYNIGERIA<span className="text-nag-green-primary">.NEWS</span>
+              </span>
+            </>
+          )}
         </a>
 
         {/* Action Icons */}
