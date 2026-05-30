@@ -9,6 +9,7 @@ const AdminLogin = lazy(() => import('./components/admin/AdminLogin'));
 const SettingsEditor = lazy(() => import('./components/admin/SettingsEditor'));
 const ArticleEditor = lazy(() => import('./components/admin/ArticleEditor'));
 const PodcastEditor = lazy(() => import('./components/admin/PodcastEditor'));
+const UserManagement = lazy(() => import('./components/admin/UserManagement'));
 
 export default function App() {
   return (
@@ -32,6 +33,7 @@ export default function App() {
           <Route path="settings" element={<SettingsEditor />} />
           <Route path="articles" element={<ArticleEditor />} />
           <Route path="podcasts" element={<PodcastEditor />} />
+          <Route path="users" element={<UserManagement />} />
         </Route>
       </Routes>
     </Router>

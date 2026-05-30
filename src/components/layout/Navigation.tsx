@@ -1,11 +1,18 @@
-import { Search, Bell, User, Menu, X, ChevronDown, Rocket, ExternalLink, Globe, TrendingUp, TrendingDown, Activity, BarChart3 } from 'lucide-react';
+import { Search, Bell, User, Menu, X, ChevronDown, Rocket, ExternalLink, Globe, TrendingUp, TrendingDown, Activity, BarChart3, LogIn, LogOut } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useSiteSettings } from '../../hooks/useSiteSettings';
+import { useAuth } from '../../hooks/useAuth';
+import { AuthModal } from '../news/AuthModal';
+import { supabase } from '../../lib/supabase';
+import toast from 'react-hot-toast';
 
 export function Header({ showIntelligence, setShowIntelligence }: { showIntelligence: boolean, setShowIntelligence: (val: boolean) => void }) {
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
   const { settings } = useSiteSettings();
+  const { user, profile } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
@@ -14,51 +21,117 @@ export function Header({ showIntelligence, setShowIntelligence }: { showIntellig
   }, []);
 
   return (
-    <header 
-      id="global-header"
-      className={`h-[64px] bg-white border-b sticky top-10 md:top-12 z-50 flex items-center transition-all duration-300 ${
-        isScrolled ? 'border-nag-border shadow-sm' : 'border-nag-gray-light'
-      }`}
-    >
-      <div className="container-nag px-6 md:px-12 flex items-center justify-between relative">
-        {/* Intel Hub Trigger - Removed from here to move after About */}
-        <div className="hidden lg:flex items-center gap-4">
-           {/* Placeholder or nothing to keep spacing if needed, but we have logo centered */}
-        </div>
+    <>
+      <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} />
+      <header 
+        id="global-header"
+        className={`h-[64px] bg-white border-b sticky top-10 md:top-12 z-[500] flex items-center transition-all duration-300 ${
+          isScrolled ? 'border-nag-border shadow-sm' : 'border-nag-gray-light'
+        }`}
+      >
+        <div className="container-nag px-6 md:px-12 flex items-center justify-between relative">
+          {/* Intel Hub Trigger - Removed from here to move after About */}
+          <div className="hidden lg:flex items-center gap-4">
+             {/* Placeholder or nothing to keep spacing if needed, but we have logo centered */}
+          </div>
 
-        {/* Logo (Centered) */}
-        <a href="#news" className="flex absolute left-1/2 -translate-x-1/2 items-center gap-2 md:gap-3 cursor-pointer group shrink-0">
-          {settings?.logo_url ? (
-            <img src={settings.logo_url} alt="Site Logo" className="h-8 md:h-10 object-contain transition-transform group-hover:scale-105" />
-          ) : (
-            <>
-              <div className="w-8 h-8 md:w-10 md:h-10 bg-nag-green-primary rounded flex items-center justify-center transition-transform group-hover:scale-105">
-                <span className="text-white font-bold text-base md:text-xl font-display">N</span>
+          {/* Logo (Centered) */}
+          <a href="#news" className="flex absolute left-1/2 -translate-x-1/2 items-center gap-2 md:gap-3 cursor-pointer group shrink-0">
+            {settings?.logo_url ? (
+              <img src={settings.logo_url} alt="Site Logo" className="h-8 md:h-10 object-contain transition-transform group-hover:scale-105" />
+            ) : (
+              <>
+                <div className="w-8 h-8 md:w-10 md:h-10 bg-nag-green-primary rounded flex items-center justify-center transition-transform group-hover:scale-105">
+                  <span className="text-white font-bold text-base md:text-xl font-display">N</span>
+                </div>
+                <span className="font-display font-black text-lg md:text-2xl tracking-tighter text-nag-black leading-none whitespace-nowrap">
+                  MYNIGERIA<span className="text-nag-green-primary">.NEWS</span>
+                </span>
+              </>
+            )}
+          </a>
+
+          {/* Action Icons */}
+          <div className="flex items-center gap-3 md:gap-6 shrink-0 relative">
+            <button id="search-trigger" aria-label="Open search" className="text-gray-500 hover:text-nag-green-primary transition-colors p-2">
+              <Search size={18} />
+            </button>
+            <button id="notifications-trigger" aria-label="View notifications" className="relative text-gray-500 hover:text-nag-green-primary transition-colors p-2 hidden sm:block">
+              <Bell size={18} />
+              <span className="absolute top-1 right-1 w-2 h-2 bg-nag-red border-2 border-white rounded-full"></span>
+            </button>
+
+            {user ? (
+              <div className="relative hidden sm:block z-50">
+                <button
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  className="w-8 h-8 rounded-full bg-nag-green-primary text-white font-black hover:bg-nag-green-secondary transition-all flex items-center justify-center cursor-pointer text-xs uppercase"
+                >
+                  {user.email?.[0] || 'U'}
+                </button>
+                <AnimatePresence>
+                  {isDropdownOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 5, scale: 0.95 }}
+                      className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-nag-border p-4 z-[600] pointer-events-auto space-y-3"
+                    >
+                      <div className="text-xs text-nag-gray-deep border-b border-nag-border pb-2">
+                        <p className="font-bold text-nag-black truncate">{user.email}</p>
+                        <p className="capitalize text-[9px] text-nag-green-primary mt-0.5 font-black tracking-widest">{profile?.role || 'User'}</p>
+                      </div>
+                      {profile?.role === 'super_admin' && (
+                        <a
+                          href="/admin/settings"
+                          className="block text-xs font-bold text-nag-black hover:text-nag-green-primary transition-colors py-1.5 cursor-pointer pointer-events-auto"
+                        >
+                          Super Admin Dashboard
+                        </a>
+                      )}
+                      <button
+                        onClick={() => {
+                          // Background call to invalidate session on server
+                          supabase.auth.signOut().catch((err) => {
+                            console.error('SignOut error in background:', err);
+                          });
+
+                          // Instantly clear all Supabase and admin related local storage items
+                          for (let i = localStorage.length - 1; i >= 0; i--) {
+                            const key = localStorage.key(i);
+                            if (key && (key.startsWith('sb-') || key === 'isAdmin')) {
+                              localStorage.removeItem(key);
+                            }
+                          }
+
+                          toast.success('Logged out successfully');
+                          setIsDropdownOpen(false);
+                          
+                          // Micro-delay to let the clean state write, then force reload
+                          setTimeout(() => {
+                            window.location.href = '/';
+                          }, 50);
+                        }}
+                        className="w-full text-left text-xs font-bold text-red-600 hover:text-red-700 transition-colors py-1.5 flex items-center gap-2 border-t border-nag-border/50 pt-2 mt-1 cursor-pointer pointer-events-auto"
+                      >
+                        <LogOut size={14} /> Logout
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
-              <span className="font-display font-black text-lg md:text-2xl tracking-tighter text-nag-black leading-none whitespace-nowrap">
-                MYNIGERIA<span className="text-nag-green-primary">.NEWS</span>
-              </span>
-            </>
-          )}
-        </a>
-
-        {/* Action Icons */}
-        <div className="flex items-center gap-3 md:gap-6 shrink-0">
-          <button id="search-trigger" aria-label="Open search" className="text-gray-500 hover:text-nag-green-primary transition-colors p-2">
-            <Search size={18} />
-          </button>
-          <button id="notifications-trigger" aria-label="View notifications" className="relative text-gray-500 hover:text-nag-green-primary transition-colors p-2 hidden sm:block">
-            <Bell size={18} />
-            <span className="absolute top-1 right-1 w-2 h-2 bg-nag-red border-2 border-white rounded-full"></span>
-          </button>
-          <div className="w-8 h-8 rounded-full bg-nag-gray-light border border-nag-border overflow-hidden cursor-pointer hidden sm:block">
-             <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-500">
-               <User size={16} />
-             </div>
+            ) : (
+              <button
+                onClick={() => setIsAuthOpen(true)}
+                className="hidden sm:block px-4 py-2 bg-nag-black text-white hover:bg-nag-green-primary text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-sm animate-fade-in"
+              >
+                Sign In
+              </button>
+            )}
           </div>
         </div>
-      </div>
-    </header>
+      </header>
+    </>
   );
 }
 
@@ -306,6 +379,8 @@ export function TopNav({ showIntelligence, setShowIntelligence }: { showIntellig
 
 export function MobileNav() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const { user, profile } = useAuth();
 
   const menuItems = [
     { 
@@ -335,8 +410,17 @@ export function MobileNav() {
     },
   ];
 
+  const handleProfileClick = () => {
+    if (user) {
+      setIsOpen(true);
+    } else {
+      setIsAuthOpen(true);
+    }
+  };
+
   return (
     <>
+      <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} />
       <nav className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-xl border-t z-[201] md:hidden flex justify-around items-center py-3 px-6 shadow-[0_-10px_30px_rgba(0,0,0,0.1)] pb-safe">
         <button onClick={() => setIsOpen(true)} className="flex flex-col items-center gap-1 text-nag-gray-deep active:scale-95 transition-transform">
           <Menu size={20} className="text-nag-black" />
@@ -353,9 +437,17 @@ export function MobileNav() {
           <Bell size={20} />
           <span className="text-[9px] font-black uppercase tracking-tighter">Alerts</span>
         </button>
-        <button className="flex flex-col items-center gap-1 text-nag-gray-deep opacity-60 active:scale-95 transition-transform">
-          <User size={20} />
-          <span className="text-[9px] font-black uppercase tracking-tighter">Profile</span>
+        <button onClick={handleProfileClick} className="flex flex-col items-center gap-1 text-nag-gray-deep active:scale-95 transition-transform">
+          {user ? (
+            <div className="w-5 h-5 rounded-full bg-nag-green-primary text-white font-black flex items-center justify-center text-[10px] uppercase">
+              {user.email?.[0] || 'U'}
+            </div>
+          ) : (
+            <User size={20} className="text-nag-black opacity-60" />
+          )}
+          <span className="text-[9px] font-black uppercase tracking-tighter">
+            {user ? 'Profile' : 'Sign In'}
+          </span>
         </button>
       </nav>
 
@@ -409,15 +501,65 @@ export function MobileNav() {
               </div>
 
               <div className="p-6 bg-nag-gray-bg space-y-4 mt-auto">
-                <div className="flex items-center gap-4 p-4 bg-white rounded-2xl border border-nag-border shadow-sm">
-                   <div className="w-10 h-10 rounded-full bg-nag-red/10 flex items-center justify-center text-nag-red">
-                     <Rocket size={20} />
-                   </div>
-                   <div className="flex-1">
-                      <p className="text-[10px] font-black uppercase tracking-tight">Premium Access</p>
-                      <p className="text-xs text-nag-gray-deep font-medium">Subscribe for ad-free news</p>
-                   </div>
-                </div>
+                {user ? (
+                  <div className="space-y-3 bg-white p-4 rounded-2xl border border-nag-border shadow-sm">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-nag-green-primary text-white font-black flex items-center justify-center text-xs uppercase">
+                        {user.email?.[0] || 'U'}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-bold text-nag-black truncate">{user.email}</p>
+                        <p className="text-[9px] font-semibold text-nag-green-primary uppercase tracking-widest leading-none mt-0.5">{profile?.role || 'User'}</p>
+                      </div>
+                    </div>
+                    {profile?.role === 'super_admin' && (
+                      <a
+                        href="/admin/settings"
+                        onClick={() => setIsOpen(false)}
+                        className="w-full py-3 bg-nag-black text-white hover:bg-nag-green-primary transition-colors text-[9px] font-black uppercase tracking-widest rounded-xl shadow-md flex items-center justify-center"
+                      >
+                        Super Admin Dashboard
+                      </a>
+                    )}
+                    <button
+                      onClick={() => {
+                        // Background call to invalidate session on server
+                        supabase.auth.signOut().catch((err) => {
+                          console.error('SignOut error in background:', err);
+                        });
+
+                        // Instantly clear all Supabase and admin related local storage items
+                        for (let i = localStorage.length - 1; i >= 0; i--) {
+                          const key = localStorage.key(i);
+                          if (key && (key.startsWith('sb-') || key === 'isAdmin')) {
+                            localStorage.removeItem(key);
+                          }
+                        }
+
+                        toast.success('Logged out successfully');
+                        setIsOpen(false);
+                        
+                        // Micro-delay to let the clean state write, then force reload
+                        setTimeout(() => {
+                          window.location.href = '/';
+                        }, 50);
+                      }}
+                      className="w-full py-3 border border-red-200 text-red-600 hover:bg-red-50 text-[9px] font-black uppercase tracking-widest rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer pointer-events-auto"
+                    >
+                      <LogOut size={12} /> Logout
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => {
+                      setIsOpen(false);
+                      setIsAuthOpen(true);
+                    }}
+                    className="w-full py-3.5 bg-nag-black text-white hover:bg-nag-green-primary text-[9px] font-black uppercase tracking-widest rounded-xl shadow-lg transition-all flex items-center justify-center gap-2"
+                  >
+                    <LogIn size={14} /> Sign In
+                  </button>
+                )}
               </div>
             </motion.div>
           </>

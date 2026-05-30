@@ -1,10 +1,16 @@
 import { motion, AnimatePresence } from 'motion/react';
 import { Radio, TrendingUp, Clock, ShieldCheck, ChevronDown, Activity, ArrowUpRight, Lock } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { useArticles } from '../../hooks/useArticles';
+import { ArticleModal } from './ArticleModal';
+import type { Article } from '../../hooks/useArticles';
 
 export function BreakingNewsBar() {
   const [time, setTime] = useState(new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
   const [showAnalysis, setShowAnalysis] = useState(false);
+  const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
+
+  const { articles } = useArticles({ limit: 5 });
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -13,7 +19,7 @@ export function BreakingNewsBar() {
     return () => clearInterval(timer);
   }, []);
 
-  const headlines = [
+  const defaultHeadlines = [
     "JUST IN: Federal Government announces new minimum wage implementation date — Full details inside.",
     "MARKET UPDATE: Naira gains 2% against USD in early morning trading at parallel market.",
     "ENERGY: Dangote Refinery set to disrupt regional fuel supply chains with first export batch.",
@@ -21,41 +27,61 @@ export function BreakingNewsBar() {
     "GOVERNANCE: National Assembly invites CBN Governor over new digital banking regulations."
   ];
 
-  return (
-    <div className="w-full bg-nag-black text-white h-10 md:h-12 border-b border-white/10 flex items-center overflow-visible sticky top-0 z-[300]">
-      {/* Label */}
-      <div className="h-full bg-nag-green-primary px-4 md:px-6 flex items-center gap-2 md:gap-3 shrink-0 relative z-20">
-        <div className="relative">
-          <Radio size={14} className="text-white" />
-          <span className="absolute -top-1 -right-1 w-2 h-2 bg-white rounded-full animate-ping"></span>
-        </div>
-        <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.2em] whitespace-nowrap">Breaking News</span>
-      </div>
+  const items = articles.length > 0
+    ? articles.map(article => ({
+        id: article.id,
+        text: `${article.category ? article.category.toUpperCase() : 'NEWS'}: ${article.title}`,
+        article
+      }))
+    : defaultHeadlines.map((text, idx) => ({
+        id: `default-${idx}`,
+        text,
+        article: null
+      }));
 
-      {/* Ticker Content */}
-      <div className="flex-1 flex items-center overflow-hidden h-full">
-        <motion.div 
-          animate={{ x: [0, -1500] }}
-          transition={{ 
-            duration: 60, 
-            repeat: Infinity, 
-            ease: "linear" 
-          }}
-          className="flex items-center gap-12 md:gap-24 whitespace-nowrap"
-        >
-          {/* Repeat headlines twice for seamless loop */}
-          {[...headlines, ...headlines].map((text, i) => (
-            <a 
-              key={i} 
-              href="#"
-              className="flex items-center gap-4 hover:text-nag-green-primary transition-colors group cursor-pointer"
-            >
-              <span className="text-[10px] md:text-sm font-bold tracking-tight opacity-90 group-hover:opacity-100">{text}</span>
-              <div className="w-1 md:w-1.5 h-1 md:h-1.5 rounded-full bg-nag-green-primary group-hover:scale-125 transition-transform"></div>
-            </a>
-          ))}
-        </motion.div>
-      </div>
+  const handleArticleClick = (article: Article) => {
+    setSelectedArticle(article);
+  };
+
+  return (
+    <>
+      <ArticleModal article={selectedArticle} onClose={() => setSelectedArticle(null)} />
+      <div className="w-full bg-nag-black text-white h-10 md:h-12 border-b border-white/10 flex items-center overflow-visible sticky top-0 z-[300]">
+        {/* Label */}
+        <div className="h-full bg-nag-green-primary px-4 md:px-6 flex items-center gap-2 md:gap-3 shrink-0 relative z-20">
+          <div className="relative">
+            <Radio size={14} className="text-white" />
+            <span className="absolute -top-1 -right-1 w-2 h-2 bg-white rounded-full animate-ping"></span>
+          </div>
+          <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.2em] whitespace-nowrap">Breaking News</span>
+        </div>
+
+        {/* Ticker Content */}
+        <div className="flex-1 flex items-center overflow-hidden h-full">
+          <motion.div 
+            animate={{ x: [0, -1500] }}
+            transition={{ 
+              duration: 60, 
+              repeat: Infinity, 
+              ease: "linear" 
+            }}
+            className="flex items-center gap-12 md:gap-24 whitespace-nowrap"
+          >
+            {/* Repeat headlines twice for seamless loop */}
+            {[...items, ...items].map((item, i) => (
+              <div 
+                key={`${item.id}-${i}`} 
+                onClick={() => item.article && handleArticleClick(item.article)}
+                className={`flex items-center gap-4 hover:text-nag-green-primary transition-colors group ${
+                  item.article ? 'cursor-pointer' : 'cursor-default'
+                }`}
+              >
+                <span className="text-[10px] md:text-sm font-bold tracking-tight opacity-90 group-hover:opacity-100">{item.text}</span>
+                <div className="w-1 md:w-1.5 h-1 md:h-1.5 rounded-full bg-nag-green-primary group-hover:scale-125 transition-transform"></div>
+              </div>
+            ))}
+          </motion.div>
+        </div>
 
       {/* Utilities/Right Side */}
       <div className="hidden lg:flex items-center gap-6 h-full bg-nag-black px-6 shrink-0 border-l border-white/5 relative z-20">
@@ -144,5 +170,6 @@ export function BreakingNewsBar() {
         </div>
       </div>
     </div>
+  </>
   );
 }
