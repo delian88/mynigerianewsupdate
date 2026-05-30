@@ -83,7 +83,7 @@ export function Header({ showIntelligence, setShowIntelligence }: { showIntellig
                       </div>
                       {profile?.role === 'super_admin' && (
                         <a
-                          href="/admin/settings"
+                          href="/admin"
                           className="block text-xs font-bold text-nag-black hover:text-nag-green-primary transition-colors py-1.5 cursor-pointer pointer-events-auto"
                         >
                           Super Admin Dashboard
@@ -514,7 +514,7 @@ export function MobileNav() {
                     </div>
                     {profile?.role === 'super_admin' && (
                       <a
-                        href="/admin/settings"
+                        href="/admin"
                         onClick={() => setIsOpen(false)}
                         className="w-full py-3 bg-nag-black text-white hover:bg-nag-green-primary transition-colors text-[9px] font-black uppercase tracking-widest rounded-xl shadow-md flex items-center justify-center"
                       >

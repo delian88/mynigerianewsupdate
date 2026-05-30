@@ -50,6 +50,15 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
         if (error) throw error;
         
+        if (data.user) {
+          await supabase.from('notifications').insert([{
+            title: 'New user registered',
+            message: `${email} created a new premium account`,
+            type: 'user',
+            read: false
+          }]);
+        }
+        
         if (data.user && data.session === null) {
           // If Supabase has email confirmation enabled
           toast.success('Registration successful! Please confirm your email address.');

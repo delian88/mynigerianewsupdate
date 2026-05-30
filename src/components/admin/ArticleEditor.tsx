@@ -60,9 +60,61 @@ export default function ArticleEditor() {
     },
   });
 
+  const [categories, setCategories] = useState<any[]>([]);
+
   useEffect(() => {
     fetchArticles();
+    fetchCategories();
   }, []);
+
+  const fetchCategories = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('categories')
+        .select('*')
+        .order('name', { ascending: true });
+      if (error) throw error;
+      setCategories(data || []);
+    } catch (err: any) {
+      console.error('Error fetching categories:', err);
+    }
+  };
+
+  const handleAddNewCategoryFromEditor = async (name: string) => {
+    const cleaned = name.trim();
+    if (!cleaned) return;
+
+    if (categories.some(c => c.name.toLowerCase() === cleaned.toLowerCase())) {
+      setEditingArticle((prev: any) => ({ ...prev, category: cleaned }));
+      return;
+    }
+
+    try {
+      const { error } = await supabase.from('categories').insert([{ name: cleaned }]);
+      if (error) throw error;
+
+      toast.success(`Category "${cleaned}" added!`);
+
+      const { data } = await supabase
+        .from('categories')
+        .select('*')
+        .order('name', { ascending: true });
+
+      if (data) setCategories(data);
+      setEditingArticle((prev: any) => ({ ...prev, category: cleaned }));
+
+      // Trigger system notification
+      await supabase.from('notifications').insert([{
+        title: 'New category created',
+        message: `Category "${cleaned}" has been added via the Article Editor`,
+        type: 'success',
+        read: false
+      }]).catch(err => console.error('Notification insertion failed:', err));
+
+    } catch (err: any) {
+      toast.error('Failed to add category: ' + err.message);
+    }
+  };
 
   useEffect(() => {
     if (editor && editingArticle) {
@@ -109,9 +161,25 @@ export default function ArticleEditor() {
       if (editingArticle.id) {
         const { error } = await supabaseAdmin.from('articles').update(payload).eq('id', editingArticle.id);
         if (error) throw error;
+        
+        // Dynamic Notification: Article Updated
+        await supabaseAdmin.from('notifications').insert([{
+          title: 'Article updated',
+          message: `"${payload.title}" has been modified.`,
+          type: 'info',
+          read: false
+        }]);
       } else {
         const { error } = await supabaseAdmin.from('articles').insert([payload]);
         if (error) throw error;
+        
+        // Dynamic Notification: New Article Published
+        await supabaseAdmin.from('notifications').insert([{
+          title: 'New article published',
+          message: payload.title,
+          type: 'article',
+          read: false
+        }]);
       }
       toast.success('Article saved');
       setEditingArticle(null);
@@ -183,13 +251,27 @@ export default function ArticleEditor() {
           
           <div className="grid grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-nag-gray-deep mb-1">Category (e.g. Politics, Business)</label>
-              <input
-                type="text"
+              <label className="block text-sm font-medium text-nag-gray-deep mb-1">Category</label>
+              <select
                 value={editingArticle.category || ''}
-                onChange={e => setEditingArticle({ ...editingArticle, category: e.target.value })}
-                className="w-full px-4 py-3 rounded-xl border border-nag-border focus:ring-2 focus:ring-nag-green-primary outline-none"
-              />
+                onChange={e => {
+                  if (e.target.value === '__new__') {
+                    const name = prompt('Enter the new category name:');
+                    if (name) {
+                      handleAddNewCategoryFromEditor(name);
+                    }
+                  } else {
+                    setEditingArticle({ ...editingArticle, category: e.target.value });
+                  }
+                }}
+                className="w-full px-4 py-3 rounded-xl border border-nag-border focus:ring-2 focus:ring-nag-green-primary outline-none bg-white font-semibold text-sm cursor-pointer"
+              >
+                <option value="">Select Category</option>
+                {categories.map(c => (
+                  <option key={c.id} value={c.name}>{c.name}</option>
+                ))}
+                <option value="__new__" className="text-nag-green-primary font-black">+ Add New Category...</option>
+              </select>
             </div>
             <div>
               <label className="block text-sm font-medium text-nag-gray-deep mb-1">Cover Image URL (Optional)</label>
