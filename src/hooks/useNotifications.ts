@@ -128,8 +128,20 @@ export function useNotifications() {
     };
   }, []);
 
+  // Helper: determine if an ID is synthetic (not a real DB row)
+  const isSyntheticId = (id: string) =>
+    id.startsWith('art-') || id.startsWith('prof-');
+
   // Mark specific notification as read
   const markAsRead = async (id: string) => {
+    // Always update local state immediately for instant UI feedback
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
+    );
+
+    // Only persist to DB for real notification rows
+    if (isSyntheticId(id)) return;
+
     try {
       const { error } = await supabase
         .from('notifications')
@@ -137,9 +149,6 @@ export function useNotifications() {
         .eq('id', id);
 
       if (error) throw error;
-      setNotifications((prev) =>
-        prev.map((n) => (n.id === id ? { ...n, read: true } : n))
-      );
     } catch (err) {
       console.error('Error marking notification as read:', err);
     }
@@ -147,20 +156,29 @@ export function useNotifications() {
 
   // Mark all notifications as read
   const markAllAsRead = async () => {
-    try {
-      const unreadIds = notifications.filter((n) => !n.read).map((n) => n.id);
-      if (unreadIds.length === 0) return;
+    const unreadNotifs = notifications.filter((n) => !n.read);
+    if (unreadNotifs.length === 0) return;
 
+    // Immediately update all to read in local state
+    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    toast.success('All notifications marked as read');
+
+    // Only persist real (non-synthetic) IDs to DB
+    const realUnreadIds = unreadNotifs
+      .filter((n) => !isSyntheticId(n.id))
+      .map((n) => n.id);
+
+    if (realUnreadIds.length === 0) return;
+
+    try {
       const { error } = await supabase
         .from('notifications')
         .update({ read: true })
-        .in('id', unreadIds);
+        .in('id', realUnreadIds);
 
       if (error) throw error;
-      setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
-      toast.success('All notifications marked as read');
     } catch (err) {
-      console.error('Error marking all as read:', err);
+      console.error('Error marking all as read in DB:', err);
     }
   };
 

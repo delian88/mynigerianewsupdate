@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../../lib/supabase';
 import { 
   FileText, 
@@ -42,10 +42,56 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const { notifications } = useNotifications();
 
+  // Per-card period state
+  type Period = 'daily' | 'weekly' | 'monthly' | 'yearly';
+  const [periodPosts, setPeriodPosts] = useState<Period>('monthly');
+  const [periodPublished, setPeriodPublished] = useState<Period>('monthly');
+  const [periodUsers, setPeriodUsers] = useState<Period>('monthly');
+  const [periodViews, setPeriodViews] = useState<Period>('monthly');
+  const [periodBreaking, setPeriodBreaking] = useState<Period>('monthly');
+
+  // Filter records by period using created_at or published_at
+  const getPeriodCutoff = (period: Period): Date => {
+    const now = new Date();
+    switch (period) {
+      case 'daily':   return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      case 'weekly':  return new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      case 'monthly': return new Date(now.getFullYear(), now.getMonth(), 1);
+      case 'yearly':  return new Date(now.getFullYear(), 0, 1);
+    }
+  };
+
+  const filterArticlesByPeriod = (arts: Article[], period: Period, dateField: 'created_at' | 'published_at' = 'created_at') => {
+    const cutoff = getPeriodCutoff(period);
+    return arts.filter(a => {
+      const d = a[dateField] || a.created_at;
+      return d ? new Date(d) >= cutoff : false;
+    });
+  };
+
+  const filterProfilesByPeriod = (profs: Profile[], period: Period) => {
+    const cutoff = getPeriodCutoff(period);
+    return profs.filter(p => p.created_at ? new Date(p.created_at) >= cutoff : false);
+  };
+
+  const PERIOD_LABELS: Record<Period, string> = {
+    daily: 'Today',
+    weekly: 'This Week',
+    monthly: 'This Month',
+    yearly: 'This Year',
+  };
+
+  // Cache last fetched data so the UI never reverts to zeros on re-fetch
+  const cachedArticles = useRef<Article[]>([]);
+  const cachedProfiles = useRef<Profile[]>([]);
+
   useEffect(() => {
-    async function fetchData() {
+    async function fetchData(showLoading = true) {
       try {
-        setLoading(true);
+        if (showLoading && cachedArticles.current.length === 0) {
+          setLoading(true);
+        }
+
         // Fetch articles
         const { data: artData } = await supabase
           .from('articles')
@@ -58,27 +104,54 @@ export default function AdminDashboard() {
           .select('id, email, role, created_at')
           .order('created_at', { ascending: false });
 
-        if (artData) setArticles(artData);
-        if (profData) setProfiles(profData);
+        if (artData) {
+          cachedArticles.current = artData;
+          setArticles(artData);
+        }
+        if (profData) {
+          cachedProfiles.current = profData;
+          setProfiles(profData);
+        }
       } catch (err) {
         console.error('Error fetching dashboard stats:', err);
+        // On error, keep using cached data (don't reset to empty)
+        if (cachedArticles.current.length > 0) {
+          setArticles(cachedArticles.current);
+          setProfiles(cachedProfiles.current);
+        }
       } finally {
         setLoading(false);
       }
     }
-    fetchData();
+
+    fetchData(true);
+
+    // Re-fetch silently (no loading spinner) when tab becomes visible again
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        fetchData(false);
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, []);
 
-  // Calculate live database-driven statistics (No artificial mock baselines!)
-  const totalPosts = articles.length;
-  const publishedPosts = articles.filter(a => a.published_at).length;
-  const totalUsers = profiles.length;
-  const pageViews = articles.reduce((sum, a) => sum + (a.view_count || 0), 0);
-  
-  // Breaking news are those categorized as 'politics', 'national' or custom fresh ones
-  const breakingNews = articles.filter(a => 
-    a.category?.toLowerCase() === 'politics' || 
-    a.category?.toLowerCase() === 'national' || 
+  // Calculate period-filtered statistics
+  const filteredPostsArticles     = filterArticlesByPeriod(articles, periodPosts);
+  const filteredPublishedArticles = filterArticlesByPeriod(articles, periodPublished, 'published_at');
+  const filteredUsers             = filterProfilesByPeriod(profiles, periodUsers);
+  const filteredViewsArticles     = filterArticlesByPeriod(articles, periodViews);
+  const filteredBreakingArticles  = filterArticlesByPeriod(articles, periodBreaking);
+
+  const totalPosts     = filteredPostsArticles.length;
+  const publishedPosts = filteredPublishedArticles.filter(a => a.published_at).length;
+  const totalUsers     = filteredUsers.length;
+  const pageViews      = filteredViewsArticles.reduce((sum, a) => sum + (a.view_count || 0), 0);
+  const breakingNews   = filteredBreakingArticles.filter(a =>
+    a.category?.toLowerCase() === 'politics' ||
+    a.category?.toLowerCase() === 'national' ||
     a.category?.toLowerCase() === 'breaking'
   ).length;
 
@@ -109,14 +182,35 @@ export default function AdminDashboard() {
 
   const chartData = getLast7DaysData();
   const maxViews = Math.max(...chartData.map(d => d.views), 10);
+
+  // Chart layout constants — left offset leaves room for Y-axis labels
+  const CHART_LEFT = 60;
+  const CHART_RIGHT = 560;
+  const CHART_TOP = 30;
+  const CHART_BOTTOM = 200;
+  const CHART_HEIGHT = CHART_BOTTOM - CHART_TOP; // 170
+  const CHART_WIDTH = CHART_RIGHT - CHART_LEFT;  // 500
+
   const points = chartData.map((d, index) => {
-    const x = Math.round((index / 6) * 500);
-    const y = Math.round(190 - (d.views / maxViews) * 140);
+    const x = Math.round(CHART_LEFT + (index / 6) * CHART_WIDTH);
+    const y = Math.round(CHART_BOTTOM - (d.views / maxViews) * CHART_HEIGHT);
     return { x, y, label: d.label, views: d.views };
   });
 
   const strokePath = `M ${points[0].x},${points[0].y} ` + points.slice(1).map(p => `L ${p.x},${p.y}`).join(' ');
-  const areaPath = `M ${points[0].x},${points[0].y} ` + points.slice(1).map(p => `L ${p.x},${p.y}`).join(' ') + ` L 500,190 L 0,190 Z`;
+  const areaPath = `M ${points[0].x},${points[0].y} ` + points.slice(1).map(p => `L ${p.x},${p.y}`).join(' ') + ` L ${CHART_RIGHT},${CHART_BOTTOM} L ${CHART_LEFT},${CHART_BOTTOM} Z`;
+
+  // Y-axis tick values: 0, 25%, 50%, 75%, 100% of maxViews
+  const yTicks = [0, 0.25, 0.5, 0.75, 1].map(ratio => ({
+    value: Math.round(maxViews * ratio),
+    y: Math.round(CHART_BOTTOM - ratio * CHART_HEIGHT)
+  }));
+
+  const formatYLabel = (n: number) => {
+    if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
+    if (n >= 1000) return (n / 1000).toFixed(n >= 10000 ? 0 : 1) + 'K';
+    return String(n);
+  };
 
   const formatNumber = (num: number) => {
     if (num >= 1000000) {
@@ -247,6 +341,8 @@ export default function AdminDashboard() {
 
       {/* KPI Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
+
+        {/* ── Reusable period dropdown helper rendered inline per card ── */}
         {/* Total Posts */}
         <div className="bg-white p-5 rounded-2xl border border-nag-border shadow-sm flex flex-col justify-between relative overflow-hidden group hover:shadow-md transition-shadow">
           <div className="flex justify-between items-start">
@@ -254,13 +350,25 @@ export default function AdminDashboard() {
               <p className="text-[10px] font-black uppercase tracking-widest text-nag-gray-deep opacity-60">Total Posts</p>
               <h3 className="text-2xl font-display font-black text-nag-black tracking-tighter mt-1">{formatNumber(totalPosts)}</h3>
             </div>
-            <div className="w-10 h-10 bg-nag-green-primary/10 rounded-xl flex items-center justify-center text-nag-green-primary">
-              <FileText size={20} />
+            <div className="flex flex-col items-end gap-2">
+              <div className="w-9 h-9 bg-nag-green-primary/10 rounded-xl flex items-center justify-center text-nag-green-primary shrink-0">
+                <FileText size={18} />
+              </div>
+              <select
+                value={periodPosts}
+                onChange={e => setPeriodPosts(e.target.value as Period)}
+                className="text-[9px] font-black uppercase tracking-wide border border-nag-border rounded-lg px-1.5 py-1 bg-nag-gray-bg text-nag-gray-deep outline-none cursor-pointer hover:border-nag-green-primary transition-colors"
+              >
+                <option value="daily">Daily</option>
+                <option value="weekly">Weekly</option>
+                <option value="monthly">Monthly</option>
+                <option value="yearly">Yearly</option>
+              </select>
             </div>
           </div>
           <div className="flex items-center gap-1 text-[10px] font-bold text-nag-green-primary mt-4">
             <ArrowUpRight size={14} />
-            <span>Active database items</span>
+            <span>{PERIOD_LABELS[periodPosts]}</span>
           </div>
         </div>
 
@@ -271,13 +379,25 @@ export default function AdminDashboard() {
               <p className="text-[10px] font-black uppercase tracking-widest text-nag-gray-deep opacity-60">Published Posts</p>
               <h3 className="text-2xl font-display font-black text-nag-black tracking-tighter mt-1">{formatNumber(publishedPosts)}</h3>
             </div>
-            <div className="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-500 border border-emerald-100">
-              <CheckCircle size={20} />
+            <div className="flex flex-col items-end gap-2">
+              <div className="w-9 h-9 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-500 border border-emerald-100 shrink-0">
+                <CheckCircle size={18} />
+              </div>
+              <select
+                value={periodPublished}
+                onChange={e => setPeriodPublished(e.target.value as Period)}
+                className="text-[9px] font-black uppercase tracking-wide border border-nag-border rounded-lg px-1.5 py-1 bg-nag-gray-bg text-nag-gray-deep outline-none cursor-pointer hover:border-emerald-400 transition-colors"
+              >
+                <option value="daily">Daily</option>
+                <option value="weekly">Weekly</option>
+                <option value="monthly">Monthly</option>
+                <option value="yearly">Yearly</option>
+              </select>
             </div>
           </div>
           <div className="flex items-center gap-1 text-[10px] font-bold text-emerald-500 mt-4">
             <ArrowUpRight size={14} />
-            <span>Visible to public site</span>
+            <span>{PERIOD_LABELS[periodPublished]}</span>
           </div>
         </div>
 
@@ -288,13 +408,25 @@ export default function AdminDashboard() {
               <p className="text-[10px] font-black uppercase tracking-widest text-nag-gray-deep opacity-60">Total Users</p>
               <h3 className="text-2xl font-display font-black text-nag-black tracking-tighter mt-1">{formatNumber(totalUsers)}</h3>
             </div>
-            <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600 border border-blue-100">
-              <UsersIcon size={20} />
+            <div className="flex flex-col items-end gap-2">
+              <div className="w-9 h-9 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600 border border-blue-100 shrink-0">
+                <UsersIcon size={18} />
+              </div>
+              <select
+                value={periodUsers}
+                onChange={e => setPeriodUsers(e.target.value as Period)}
+                className="text-[9px] font-black uppercase tracking-wide border border-nag-border rounded-lg px-1.5 py-1 bg-nag-gray-bg text-nag-gray-deep outline-none cursor-pointer hover:border-blue-400 transition-colors"
+              >
+                <option value="daily">Daily</option>
+                <option value="weekly">Weekly</option>
+                <option value="monthly">Monthly</option>
+                <option value="yearly">Yearly</option>
+              </select>
             </div>
           </div>
           <div className="flex items-center gap-1 text-[10px] font-bold text-blue-600 mt-4">
             <ArrowUpRight size={14} />
-            <span>Registered profiles</span>
+            <span>{PERIOD_LABELS[periodUsers]}</span>
           </div>
         </div>
 
@@ -305,13 +437,25 @@ export default function AdminDashboard() {
               <p className="text-[10px] font-black uppercase tracking-widest text-nag-gray-deep opacity-60">Page Views</p>
               <h3 className="text-2xl font-display font-black text-nag-black tracking-tighter mt-1">{formatNumber(pageViews)}</h3>
             </div>
-            <div className="w-10 h-10 bg-purple-50 rounded-xl flex items-center justify-center text-purple-600 border border-purple-100">
-              <Eye size={20} />
+            <div className="flex flex-col items-end gap-2">
+              <div className="w-9 h-9 bg-purple-50 rounded-xl flex items-center justify-center text-purple-600 border border-purple-100 shrink-0">
+                <Eye size={18} />
+              </div>
+              <select
+                value={periodViews}
+                onChange={e => setPeriodViews(e.target.value as Period)}
+                className="text-[9px] font-black uppercase tracking-wide border border-nag-border rounded-lg px-1.5 py-1 bg-nag-gray-bg text-nag-gray-deep outline-none cursor-pointer hover:border-purple-400 transition-colors"
+              >
+                <option value="daily">Daily</option>
+                <option value="weekly">Weekly</option>
+                <option value="monthly">Monthly</option>
+                <option value="yearly">Yearly</option>
+              </select>
             </div>
           </div>
           <div className="flex items-center gap-1 text-[10px] font-bold text-purple-600 mt-4">
             <ArrowUpRight size={14} />
-            <span>Combined article hits</span>
+            <span>{PERIOD_LABELS[periodViews]}</span>
           </div>
         </div>
 
@@ -322,15 +466,28 @@ export default function AdminDashboard() {
               <p className="text-[10px] font-black uppercase tracking-widest text-nag-gray-deep opacity-60">Breaking News</p>
               <h3 className="text-2xl font-display font-black text-nag-black tracking-tighter mt-1">{breakingNews}</h3>
             </div>
-            <div className="w-10 h-10 bg-red-50 rounded-xl flex items-center justify-center text-red-500 border border-red-100 animate-pulse">
-              <TrendingUp size={20} />
+            <div className="flex flex-col items-end gap-2">
+              <div className="w-9 h-9 bg-red-50 rounded-xl flex items-center justify-center text-red-500 border border-red-100 shrink-0">
+                <TrendingUp size={18} />
+              </div>
+              <select
+                value={periodBreaking}
+                onChange={e => setPeriodBreaking(e.target.value as Period)}
+                className="text-[9px] font-black uppercase tracking-wide border border-nag-border rounded-lg px-1.5 py-1 bg-nag-gray-bg text-nag-gray-deep outline-none cursor-pointer hover:border-red-400 transition-colors"
+              >
+                <option value="daily">Daily</option>
+                <option value="weekly">Weekly</option>
+                <option value="monthly">Monthly</option>
+                <option value="yearly">Yearly</option>
+              </select>
             </div>
           </div>
           <div className="flex items-center gap-1 text-[10px] font-bold text-red-500 mt-4">
             <ArrowUpRight size={14} />
-            <span>Politics & National items</span>
+            <span>{PERIOD_LABELS[periodBreaking]}</span>
           </div>
         </div>
+
       </div>
 
       {/* Main Charts & Analytics Section */}
@@ -353,55 +510,91 @@ export default function AdminDashboard() {
           </div>
 
           {/* Interactive SVG Area Chart */}
-          <div className="flex-1 min-h-[220px] relative mt-2">
-            <svg viewBox="0 0 500 200" className="w-full h-full overflow-visible">
+          <div className="flex-1 min-h-[240px] relative mt-2">
+            <svg viewBox="0 0 560 220" className="w-full h-full overflow-visible">
               <defs>
                 <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="#008751" stopOpacity="0.25" />
                   <stop offset="100%" stopColor="#008751" stopOpacity="0.00" />
                 </linearGradient>
               </defs>
-              
-              {/* Grid Lines */}
-              <line x1="0" y1="40" x2="500" y2="40" stroke="#f1f5f9" strokeWidth="1" strokeDasharray="4 4" />
-              <line x1="0" y1="90" x2="500" y2="90" stroke="#f1f5f9" strokeWidth="1" strokeDasharray="4 4" />
-              <line x1="0" y1="140" x2="500" y2="140" stroke="#f1f5f9" strokeWidth="1" strokeDasharray="4 4" />
-              <line x1="0" y1="190" x2="500" y2="190" stroke="#e2e8f0" strokeWidth="1.5" />
+
+              {/* Y-axis tick labels + horizontal grid lines */}
+              {yTicks.map((tick, i) => (
+                <g key={i}>
+                  {/* Dashed grid line across chart area */}
+                  <line
+                    x1={CHART_LEFT}
+                    y1={tick.y}
+                    x2={CHART_RIGHT}
+                    y2={tick.y}
+                    stroke={i === 0 ? '#e2e8f0' : '#f1f5f9'}
+                    strokeWidth={i === 0 ? 1.5 : 1}
+                    strokeDasharray={i === 0 ? undefined : '4 4'}
+                  />
+                  {/* Y-axis number label */}
+                  <text
+                    x={CHART_LEFT - 8}
+                    y={tick.y + 4}
+                    textAnchor="end"
+                    fontSize="9"
+                    fontWeight="700"
+                    fill="#94a3b8"
+                    fontFamily="system-ui, sans-serif"
+                  >
+                    {formatYLabel(tick.value)}
+                  </text>
+                </g>
+              ))}
+
+              {/* Y-axis vertical rule */}
+              <line
+                x1={CHART_LEFT}
+                y1={CHART_TOP}
+                x2={CHART_LEFT}
+                y2={CHART_BOTTOM}
+                stroke="#e2e8f0"
+                strokeWidth="1"
+              />
 
               {/* Chart Path Area */}
-              <path 
-                d={areaPath} 
-                fill="url(#chartGrad)" 
+              <path
+                d={areaPath}
+                fill="url(#chartGrad)"
               />
 
               {/* Chart Stroke Line */}
-              <path 
-                d={strokePath} 
-                fill="none" 
-                stroke="#008751" 
-                strokeWidth="3.5" 
+              <path
+                d={strokePath}
+                fill="none"
+                stroke="#008751"
+                strokeWidth="3.5"
                 strokeLinecap="round"
+                strokeLinejoin="round"
               />
 
               {/* Curve Dots */}
               {points.map((p, idx) => (
-                <circle 
-                  key={idx} 
-                  cx={p.x} 
-                  cy={p.y} 
-                  r="5" 
-                  fill="#008751" 
-                  stroke="#ffffff" 
-                  strokeWidth="2" 
-                  className="transition-all hover:r-7 cursor-pointer" 
+                <circle
+                  key={idx}
+                  cx={p.x}
+                  cy={p.y}
+                  r="5"
+                  fill="#008751"
+                  stroke="#ffffff"
+                  strokeWidth="2"
+                  className="cursor-pointer"
                 >
-                  <title>{`${p.label}: ${p.views} views`}</title>
+                  <title>{`${p.label}: ${p.views.toLocaleString()} views`}</title>
                 </circle>
               ))}
             </svg>
 
-            {/* X-Axis Labels */}
-            <div className="flex justify-between text-[9px] font-black uppercase text-nag-gray-deep opacity-60 mt-3 px-1">
+            {/* X-Axis Labels — aligned to chart plot area */}
+            <div
+              className="flex justify-between text-[9px] font-black uppercase text-nag-gray-deep opacity-60 mt-1"
+              style={{ paddingLeft: `${(CHART_LEFT / 560) * 100}%`, paddingRight: '0%' }}
+            >
               {chartData.map((d, idx) => (
                 <span key={idx}>{d.label}</span>
               ))}
