@@ -44,7 +44,7 @@ export default function AdminLogin() {
         // 3. Mark as admin locally (for backward-compatibility) and redirect
         localStorage.setItem('isAdmin', 'true');
         toast.success('Admin authenticated successfully');
-        navigate('/admin/settings');
+        navigate('/admin');
       }
     } catch (err: any) {
       toast.error(err.message || 'Authentication failed');

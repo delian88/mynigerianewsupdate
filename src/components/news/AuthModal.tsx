@@ -70,7 +70,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
           const isAdminEmail = email === 'admin@mynigeria.news' || email === 'superadmin@mynigeria.news';
           if (isAdminEmail) {
             localStorage.setItem('isAdmin', 'true');
-            window.location.href = '/admin/settings';
+            window.location.href = '/admin';
           } else if (data.user) {
             // Fetch role just in case
             const { data: profile } = await supabase
@@ -81,7 +81,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
             if (profile?.role === 'super_admin') {
               localStorage.setItem('isAdmin', 'true');
-              window.location.href = '/admin/settings';
+              window.location.href = '/admin';
             }
           }
         }
@@ -100,7 +100,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
           const isAdminEmail = email === 'admin@mynigeria.news' || email === 'superadmin@mynigeria.news';
           if (isAdminEmail) {
             localStorage.setItem('isAdmin', 'true');
-            window.location.href = '/admin/settings';
+            window.location.href = '/admin';
           } else {
             const { data: profile } = await supabase
               .from('profiles')
@@ -110,7 +110,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
             if (profile?.role === 'super_admin') {
               localStorage.setItem('isAdmin', 'true');
-              window.location.href = '/admin/settings';
+              window.location.href = '/admin';
             }
           }
         }
