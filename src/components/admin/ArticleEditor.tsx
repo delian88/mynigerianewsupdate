@@ -104,12 +104,16 @@ export default function ArticleEditor() {
       setEditingArticle((prev: any) => ({ ...prev, category: cleaned }));
 
       // Trigger system notification
-      await supabase.from('notifications').insert([{
-        title: 'New category created',
-        message: `Category "${cleaned}" has been added via the Article Editor`,
-        type: 'success',
-        read: false
-      }]).catch(err => console.error('Notification insertion failed:', err));
+      try {
+        await supabase.from('notifications').insert([{
+          title: 'New category created',
+          message: `Category "${cleaned}" has been added via the Article Editor`,
+          type: 'success',
+          read: false
+        }]);
+      } catch (err) {
+        console.error('Notification insertion failed:', err);
+      }
 
     } catch (err: any) {
       toast.error('Failed to add category: ' + err.message);

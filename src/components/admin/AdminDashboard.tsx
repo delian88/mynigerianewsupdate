@@ -394,8 +394,9 @@ export default function AdminDashboard() {
                   stroke="#ffffff" 
                   strokeWidth="2" 
                   className="transition-all hover:r-7 cursor-pointer" 
-                  title={`${p.label}: ${p.views} views`}
-                />
+                >
+                  <title>{`${p.label}: ${p.views} views`}</title>
+                </circle>
               ))}
             </svg>
 

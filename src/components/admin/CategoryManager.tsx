@@ -60,12 +60,16 @@ export default function CategoryManager() {
       fetchCategories();
 
       // Trigger system notification
-      await supabase.from('notifications').insert([{
-        title: 'New category created',
-        message: `Category "${cleanedName}" has been added to the editorial catalog`,
-        type: 'success',
-        read: false
-      }]).catch(err => console.error('Notification insertion failed:', err));
+      try {
+        await supabase.from('notifications').insert([{
+          title: 'New category created',
+          message: `Category "${cleanedName}" has been added to the editorial catalog`,
+          type: 'success',
+          read: false
+        }]);
+      } catch (err) {
+        console.error('Notification insertion failed:', err);
+      }
 
     } catch (err: any) {
       toast.error('Failed to add category: ' + err.message);
@@ -89,12 +93,16 @@ export default function CategoryManager() {
       fetchCategories();
 
       // Trigger system notification
-      await supabase.from('notifications').insert([{
-        title: 'Category deleted',
-        message: `Category "${name}" was removed from the catalog`,
-        type: 'warning',
-        read: false
-      }]).catch(err => console.error('Notification insertion failed:', err));
+      try {
+        await supabase.from('notifications').insert([{
+          title: 'Category deleted',
+          message: `Category "${name}" was removed from the catalog`,
+          type: 'warning',
+          read: false
+        }]);
+      } catch (err) {
+        console.error('Notification insertion failed:', err);
+      }
 
     } catch (err: any) {
       toast.error('Failed to delete category: ' + err.message);

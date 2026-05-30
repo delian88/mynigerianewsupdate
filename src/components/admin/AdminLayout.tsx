@@ -70,7 +70,19 @@ export default function AdminLayout() {
     }, 50);
   };
 
-  const menuSections = [
+  interface MenuItem {
+    name: string;
+    path: string;
+    icon: any;
+    badge?: string;
+  }
+
+  interface MenuSection {
+    title: string;
+    items: MenuItem[];
+  }
+
+  const menuSections: MenuSection[] = [
     {
       title: 'Navigation',
       items: [
