@@ -334,11 +334,17 @@ export default function AdminLayout() {
               onClick={() => setIsProfileOpen(true)}
               className="flex items-center gap-3.5 pl-6 border-l border-nag-border relative group select-none cursor-pointer hover:opacity-80 transition-opacity"
             >
-              <div className="w-9 h-9 rounded-full bg-nag-green-primary/10 border border-nag-green-primary/30 flex items-center justify-center text-nag-green-primary font-black uppercase text-xs shadow-sm group-hover:scale-105 transition-transform">
-                {(user?.email || 'S')[0]}
+              <div className="w-9 h-9 rounded-full overflow-hidden bg-nag-green-primary/10 border border-nag-green-primary/30 flex items-center justify-center text-nag-green-primary font-black uppercase text-xs shadow-sm group-hover:scale-105 transition-transform">
+                {profile?.avatar_url ? (
+                  <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+                ) : (
+                  (user?.email || 'S')[0]
+                )}
               </div>
               <div className="hidden sm:flex flex-col leading-none">
-                <span className="text-xs font-black text-nag-black leading-none uppercase">Super Admin</span>
+                <span className="text-xs font-black text-nag-black leading-none uppercase">
+                  {profile?.full_name || 'Super Admin'}
+                </span>
                 <span className="text-[9px] font-bold text-nag-gray-deep leading-none mt-1 opacity-70">
                   {user?.email || 'superadmin@mynigeria.news'}
                 </span>
