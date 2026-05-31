@@ -59,7 +59,7 @@ select cron.schedule(
     $$
         select net.http_post(
                 url := 'https://dsqwhzcaiyvcliigmggd.supabase.co/functions/v1/fetch-news',
-                headers := '{"Content-Type": "application/json", "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRzcXdoemNhaXl2Y2xpaWdtZ2dkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNzc5NDcsImV4cCI6MjA5NTY1Mzk0N30.hhMMaipNx-MDqFaAdoJIv4JKOIge0GGJOMgYEYBQMjA"}'::json,
+                headers := '{"Content-Type": "application/json", "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRzcXdoemNhaXl2Y2xpaWdtZ2dkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNzc5NDcsImV4cCI6MjA5NTY1Mzk0N30.hhMMaipNx-MDqFaAdoJIv4JKOIge0GGJOMgYEYBQMjA"}'::jsonb,
                 body := '{}'::jsonb
         ) as request_id;
     $$

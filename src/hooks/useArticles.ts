@@ -44,6 +44,34 @@ export function useArticles({ limit = 10, category }: UseArticlesOptions = {}) {
         const { data, error } = await query;
         if (error) throw error;
         if (mounted) {
+          // If no articles exist in the database, trigger RSS fetch in the background automatically
+          if ((!data || data.length === 0) && !category) {
+            const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+            const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+            if (supabaseUrl && anonKey) {
+              fetch(`${supabaseUrl}/functions/v1/fetch-news`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${anonKey}`,
+                },
+                body: JSON.stringify({}),
+              })
+                .then(async (res) => {
+                  if (res.ok) {
+                    const { data: newData } = await query;
+                    if (mounted && newData && newData.length > 0) {
+                      setArticles(newData.map(a => ({
+                        ...a,
+                        published_at: a.published_at || a.created_at,
+                      })));
+                    }
+                  }
+                })
+                .catch((err) => console.error('Failed to auto-fetch news:', err));
+            }
+          }
+
           // Normalise: ensure published_at always has a value (fall back to created_at)
           const normalised = (data || []).map(a => ({
             ...a,
