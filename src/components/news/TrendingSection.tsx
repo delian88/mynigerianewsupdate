@@ -65,10 +65,10 @@ const mustRead = [
   }
 ];
 
-export function TrendingSection() {
+export function TrendingSection({ selectedCategory }: { selectedCategory?: string | null }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
-  const { articles, loading, incrementView } = useArticles({ limit: 8 });
+  const { articles, loading, incrementView } = useArticles({ limit: 8, category: selectedCategory || undefined });
 
   // Defaults shown while loading or when DB is empty
   const defaultTrending = [

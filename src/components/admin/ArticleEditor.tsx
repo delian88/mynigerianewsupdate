@@ -239,6 +239,33 @@ export default function ArticleEditor() {
     fileInput.click();
   };
 
+  const handleUploadCoverImage = async () => {
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = 'image/*';
+    fileInput.onchange = async (e: any) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      try {
+        toast.loading('Uploading cover image...', { id: 'cover-upload' });
+        const fileExt = file.name.split('.').pop();
+        const fileName = `cover-${Math.random()}.${fileExt}`;
+        const filePath = `covers/${fileName}`;
+
+        const { error } = await supabaseAdmin.storage.from('media').upload(filePath, file);
+        if (error) throw error;
+
+        const { data: { publicUrl } } = supabaseAdmin.storage.from('media').getPublicUrl(filePath);
+        
+        setEditingArticle((prev: any) => ({ ...prev, cover_image_url: publicUrl }));
+        toast.success('Cover image uploaded successfully', { id: 'cover-upload' });
+      } catch (error: any) {
+        toast.error('Upload failed: ' + error.message, { id: 'cover-upload' });
+      }
+    };
+    fileInput.click();
+  };
+
   if (loading) return <div className="flex justify-center h-64 items-center"><Loader2 className="animate-spin text-nag-green-primary" size={32} /></div>;
 
   if (editingArticle) {
@@ -295,14 +322,38 @@ export default function ArticleEditor() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-nag-gray-deep mb-1">Cover Image URL (Optional)</label>
-              <input
-                type="text"
-                value={editingArticle.cover_image_url || ''}
-                onChange={e => setEditingArticle({ ...editingArticle, cover_image_url: e.target.value })}
-                className="w-full px-4 py-3 rounded-xl border border-nag-border focus:ring-2 focus:ring-nag-green-primary outline-none"
-                placeholder="https://..."
-              />
+              <label className="block text-sm font-medium text-nag-gray-deep mb-1 flex justify-between items-center">
+                <span>Cover Image URL (Optional)</span>
+                <span className="text-[10px] text-nag-gray-deep opacity-60">or upload from PC</span>
+              </label>
+              <div className="relative flex items-center">
+                <input
+                  type="text"
+                  value={editingArticle.cover_image_url || ''}
+                  onChange={e => setEditingArticle({ ...editingArticle, cover_image_url: e.target.value })}
+                  className="w-full pl-4 pr-20 py-3 rounded-xl border border-nag-border focus:ring-2 focus:ring-nag-green-primary outline-none"
+                  placeholder="https://..."
+                />
+                <button
+                  type="button"
+                  onClick={handleUploadCoverImage}
+                  className="absolute right-2 px-3 py-1.5 bg-nag-green-primary hover:bg-nag-green-secondary text-white text-[10px] font-black uppercase tracking-wider rounded-lg transition-all cursor-pointer shadow-sm"
+                >
+                  Upload
+                </button>
+              </div>
+              {editingArticle.cover_image_url && (
+                <div className="mt-2 relative rounded-xl overflow-hidden border border-nag-border h-20 max-w-xs group">
+                  <img src={editingArticle.cover_image_url} alt="Cover Preview" className="w-full h-full object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => setEditingArticle({ ...editingArticle, cover_image_url: '' })}
+                    className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-bold gap-1 cursor-pointer"
+                  >
+                    <Trash2 size={12} /> Remove
+                  </button>
+                </div>
+              )}
             </div>
             <div>
               <label className="block text-sm font-medium text-nag-gray-deep mb-1">Published Date & Time</label>

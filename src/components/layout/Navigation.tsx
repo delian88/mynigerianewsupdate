@@ -80,7 +80,7 @@ export function Header({ showIntelligence, setShowIntelligence }: { showIntellig
             {user ? (
               <div className="relative hidden sm:block z-50">
                 <button
-                  onClick={() => setIsProfileOpen(true)}
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                   className="w-8 h-8 rounded-full overflow-hidden bg-nag-green-primary text-white font-black hover:bg-nag-green-secondary transition-all flex items-center justify-center cursor-pointer text-xs uppercase"
                   title="View Profile & Actions"
                 >
@@ -179,7 +179,21 @@ export function Header({ showIntelligence, setShowIntelligence }: { showIntellig
   );
 }
 
-export function TopNav({ showIntelligence, setShowIntelligence }: { showIntelligence: boolean, setShowIntelligence: (val: boolean) => void }) {
+export function TopNav({ 
+  showIntelligence, 
+  setShowIntelligence,
+  selectedCategory,
+  setSelectedCategory,
+  activeMarketplaceTab,
+  setActiveMarketplaceTab
+}: { 
+  showIntelligence: boolean, 
+  setShowIntelligence: (val: boolean) => void,
+  selectedCategory: string | null,
+  setSelectedCategory: (val: string | null) => void,
+  activeMarketplaceTab?: 'automotive' | 'realestate' | 'careers',
+  setActiveMarketplaceTab?: (val: 'automotive' | 'realestate' | 'careers') => void
+}) {
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
 
   const stats = [
@@ -302,7 +316,21 @@ export function TopNav({ showIntelligence, setShowIntelligence }: { showIntellig
                       {col.items.map((sub, sIdx) => (
                         <li key={sIdx}>
                           <a 
-                            href="#" 
+                            href={`#${item.id}`} 
+                            onClick={() => {
+                              setActiveMenu(null);
+                              if (item.id === 'news') {
+                                setSelectedCategory(sub);
+                              } else if (item.id === 'marketplace' && setActiveMarketplaceTab) {
+                                if (col.title === 'AUTOMOTIVE') {
+                                  setActiveMarketplaceTab('automotive');
+                                } else if (col.title === 'REAL ESTATE') {
+                                  setActiveMarketplaceTab('realestate');
+                                } else if (col.title === 'CAREERS') {
+                                  setActiveMarketplaceTab('careers');
+                                }
+                              }
+                            }}
                             className="group flex items-center justify-between py-2 px-3 -mx-3 rounded-xl hover:bg-nag-green-primary/5 transition-all"
                           >
                             <span className="text-[14px] font-bold text-nag-gray-deep group-hover:text-nag-black transition-colors">
@@ -421,7 +449,17 @@ export function TopNav({ showIntelligence, setShowIntelligence }: { showIntellig
   );
 }
 
-export function MobileNav() {
+export function MobileNav({
+  selectedCategory,
+  setSelectedCategory,
+  activeMarketplaceTab,
+  setActiveMarketplaceTab
+}: {
+  selectedCategory: string | null;
+  setSelectedCategory: (val: string | null) => void;
+  activeMarketplaceTab?: 'automotive' | 'realestate' | 'careers';
+  setActiveMarketplaceTab?: (val: 'automotive' | 'realestate' | 'careers') => void;
+}) {
   const [isOpen, setIsOpen] = useState(false);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -547,7 +585,20 @@ export function MobileNav() {
                         <li key={idx}>
                           <a 
                             href={`#${menu.id}`} 
-                            onClick={() => setIsOpen(false)}
+                            onClick={() => {
+                              setIsOpen(false);
+                              if (menu.id === 'news') {
+                                setSelectedCategory(link === 'Business' ? 'Business & Economy' : link);
+                              } else if (menu.id === 'marketplace' && setActiveMarketplaceTab) {
+                                if (link.toLowerCase().includes('car') || link.toLowerCase().includes('auto')) {
+                                  setActiveMarketplaceTab('automotive');
+                                } else if (link.toLowerCase().includes('estate') || link.toLowerCase().includes('real')) {
+                                  setActiveMarketplaceTab('realestate');
+                                } else if (link.toLowerCase().includes('career') || link.toLowerCase().includes('job')) {
+                                  setActiveMarketplaceTab('careers');
+                                }
+                              }
+                            }}
                             className="text-sm font-bold text-nag-black hover:text-nag-green-primary transition-colors flex items-center justify-between"
                           >
                             {link}

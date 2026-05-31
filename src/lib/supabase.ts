@@ -10,7 +10,13 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-export const supabaseAdmin = supabaseServiceKey
+const isValidJWT = (token?: string) => {
+  if (!token) return false;
+  const parts = token.split('.');
+  return parts.length === 3 && token.startsWith('eyJ');
+};
+
+export const supabaseAdmin = (supabaseServiceKey && isValidJWT(supabaseServiceKey))
   ? createClient(supabaseUrl, supabaseServiceKey, {
       auth: {
         persistSession: false,

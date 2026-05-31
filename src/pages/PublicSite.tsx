@@ -20,6 +20,8 @@ import { motion } from 'motion/react';
 export default function PublicSite() {
   const [showIntelligence, setShowIntelligence] = useState(false);
   const [isPodcastOpen, setIsPodcastOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [activeMarketplaceTab, setActiveMarketplaceTab] = useState<'automotive' | 'realestate' | 'careers'>('automotive');
 
   return (
     <div className="min-h-screen flex flex-col font-sans selection:bg-nag-green-primary selection:text-white bg-nag-gray-bg">
@@ -28,10 +30,42 @@ export default function PublicSite() {
 
       {/* Global Layout Wrapper */}
       <Header showIntelligence={showIntelligence} setShowIntelligence={setShowIntelligence} />
-      <TopNav showIntelligence={showIntelligence} setShowIntelligence={setShowIntelligence} />
-      <MobileNav />
+      <TopNav 
+        showIntelligence={showIntelligence} 
+        setShowIntelligence={setShowIntelligence} 
+        selectedCategory={selectedCategory}
+        setSelectedCategory={setSelectedCategory}
+        activeMarketplaceTab={activeMarketplaceTab}
+        setActiveMarketplaceTab={setActiveMarketplaceTab}
+      />
+      <MobileNav 
+        selectedCategory={selectedCategory}
+        setSelectedCategory={setSelectedCategory}
+        activeMarketplaceTab={activeMarketplaceTab}
+        setActiveMarketplaceTab={setActiveMarketplaceTab}
+      />
+
 
       <main className="flex-1">
+        {selectedCategory && (
+          <div className="container-nag px-6 md:px-12 pt-8">
+            <div className="flex items-center justify-between bg-white border border-nag-border rounded-2xl p-4 shadow-sm animate-fade-in">
+              <div className="flex items-center gap-3">
+                <span className="text-[10px] font-black uppercase tracking-wider text-nag-gray-deep">Filtering news by</span>
+                <span className="px-3.5 py-1.5 bg-nag-green-primary text-white text-[10px] font-black uppercase rounded-xl tracking-widest shadow-sm">
+                  {selectedCategory}
+                </span>
+              </div>
+              <button
+                onClick={() => setSelectedCategory(null)}
+                className="text-[10px] font-black uppercase tracking-widest text-red-600 hover:text-red-700 hover:bg-red-50 px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
+              >
+                Clear Filter
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* News Section */}
         <motion.div 
           id="news" 
@@ -41,8 +75,8 @@ export default function PublicSite() {
           viewport={{ once: false, margin: "-100px" }}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
         >
-          <HeroSection />
-          <TrendingSection />
+          <HeroSection selectedCategory={selectedCategory} />
+          <TrendingSection selectedCategory={selectedCategory} />
         </motion.div>
 
         {/* Interactive Sections Staggered Entrance */}
@@ -152,7 +186,7 @@ export default function PublicSite() {
             viewport={{ once: false, margin: "-100px" }}
             transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
           >
-            <MarketplaceHub />
+            <MarketplaceHub activeTab={activeMarketplaceTab} setActiveTab={setActiveMarketplaceTab} />
           </motion.div>
 
           {/* Media Network Aggregator */}

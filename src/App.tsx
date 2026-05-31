@@ -12,6 +12,7 @@ const ArticleEditor = lazy(() => import('./components/admin/ArticleEditor'));
 const PodcastEditor = lazy(() => import('./components/admin/PodcastEditor'));
 const UserManagement = lazy(() => import('./components/admin/UserManagement'));
 const CategoryManager = lazy(() => import('./components/admin/CategoryManager'));
+const CarMarketplaceEditor = lazy(() => import('./components/admin/CarMarketplaceEditor'));
 
 export default function App() {
   return (
@@ -38,6 +39,7 @@ export default function App() {
           <Route path="podcasts" element={<PodcastEditor />} />
           <Route path="users" element={<UserManagement />} />
           <Route path="categories" element={<CategoryManager />} />
+          <Route path="cars" element={<CarMarketplaceEditor />} />
         </Route>
       </Routes>
     </Router>

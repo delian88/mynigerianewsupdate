@@ -88,9 +88,9 @@ const SIDE_FALLBACKS = [
   },
 ];
 
-export function HeroSection() {
+export function HeroSection({ selectedCategory }: { selectedCategory?: string | null }) {
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
-  const { articles, loading, incrementView } = useArticles({ limit: 4 });
+  const { articles, loading, incrementView } = useArticles({ limit: 4, category: selectedCategory || undefined });
 
   const heroArticle = articles[0] ?? null;
   const sideArticles = articles.slice(1, 4);

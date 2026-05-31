@@ -41,7 +41,11 @@ export function useArticles({ limit = 10, category }: UseArticlesOptions = {}) {
           .limit(limit);
 
         if (category) {
-          query = query.eq('category', category);
+          if (category === 'Business & Economy') {
+            query = query.or('category.eq.Business,category.eq.Economy');
+          } else {
+            query = query.eq('category', category);
+          }
         }
 
         const { data, error } = await query;

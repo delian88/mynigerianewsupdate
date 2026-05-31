@@ -23,7 +23,8 @@ import {
   Bell,
   Search,
   LogOut,
-  Radio
+  Radio,
+  Car
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { supabase } from '../../lib/supabase';
@@ -96,6 +97,7 @@ export default function AdminLayout() {
       items: [
         { name: 'Posts', path: '/admin/articles', icon: FileText },
         { name: 'Podcasts', path: '/admin/podcasts', icon: Radio },
+        { name: 'Car Marketplace', path: '/admin/cars', icon: Car },
         { name: 'Categories', path: '/admin/categories', icon: Folder },
         { name: 'Authors', path: '#authors', icon: User },
         { name: 'Media Library', path: '#media', icon: Image },
