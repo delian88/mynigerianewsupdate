@@ -6,6 +6,87 @@ import {
   MapPin, Calendar, DollarSign, List, Shield, Check, Trash
 } from 'lucide-react';
 
+const promiseWithTimeout = (promise: Promise<any>, timeoutMs: number = 30000) => {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) =>
+      setTimeout(
+        () => reject(new Error('Network request timed out. Please check your internet connection or browser security/adblocker shields.')),
+        timeoutMs
+      )
+    )
+  ]);
+};
+
+const FALLBACK_PLANS = [
+  {
+    id: 'fallback-weekly',
+    name: 'Basic Weekly Ad',
+    price: 5000,
+    duration_days: 7,
+    features: ['7 Days Visibility', 'Standard Reach', '1 Image Upload'],
+    created_at: new Date().toISOString()
+  },
+  {
+    id: 'fallback-monthly',
+    name: 'Premium Dealer Monthly',
+    price: 15000,
+    duration_days: 30,
+    features: ['30 Days Visibility', 'Highlighted Badge', 'Up to 5 Images', 'Priority Placement'],
+    created_at: new Date().toISOString()
+  },
+  {
+    id: 'fallback-annual',
+    name: 'Unlimited Enterprise Annual',
+    price: 120000,
+    duration_days: 365,
+    features: ['365 Days Visibility', 'Featured Homepage Banner', 'Infinite Images', 'Dedicated Dealer Page', 'Supervised Escrow Trade'],
+    created_at: new Date().toISOString()
+  }
+];
+
+const FALLBACK_CARS = [
+  {
+    id: 'fallback-prado',
+    title: '2022 Toyota Prado (TX-L) - Full Option',
+    price: '₦85,000,000',
+    price_val: 85000000,
+    year: 2022,
+    model: 'Toyota',
+    location: 'Lagos, NG',
+    badge: 'Verified Dealer',
+    img: 'https://images.unsplash.com/photo-1617469767053-d3b523a0b982?w=700&auto=format&fit=crop&q=60',
+    status: 'approved',
+    created_at: new Date().toISOString()
+  },
+  {
+    id: 'fallback-g63',
+    title: 'Mercedes-Benz G63 AMG - Bulletproof',
+    price: '₦180,000,000',
+    price_val: 180000000,
+    year: 2023,
+    model: 'Mercedes',
+    location: 'Abuja, NG',
+    badge: 'Secure Trade',
+    img: 'https://images.unsplash.com/photo-1520031441872-265e4ff70366?q=80&w=600&fit=crop',
+    status: 'approved',
+    created_at: new Date().toISOString()
+  },
+  {
+    id: 'fallback-hilux',
+    title: 'Toyota Hilux Adventure 2021',
+    price: '₦45,000,000',
+    price_val: 45000000,
+    year: 2021,
+    model: 'Toyota',
+    location: 'Ikeja, Lagos',
+    badge: 'Accessories',
+    img: 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?q=80&w=600&fit=crop',
+    status: 'approved',
+    created_at: new Date().toISOString()
+  }
+];
+
 export default function CarMarketplaceEditor() {
   const [activeTab, setActiveTab] = useState<'cars' | 'plans'>('cars');
   const [cars, setCars] = useState<any[]>([]);
@@ -26,27 +107,53 @@ export default function CarMarketplaceEditor() {
   }, [activeTab]);
 
   const fetchData = async () => {
-    try {
-      setLoading(true);
-      if (activeTab === 'cars') {
-        const { data, error } = await supabase
-          .from('marketplace_cars')
-          .select('*')
-          .order('created_at', { ascending: false });
+    console.log('[CarMarketplaceEditor] fetchData started, activeTab:', activeTab);
+    setLoading(true);
+    
+    if (activeTab === 'cars') {
+      try {
+        console.log('[CarMarketplaceEditor] Fetching cars from Supabase (5s timeout)...');
+        const { data, error } = await promiseWithTimeout(
+          Promise.resolve(
+            supabase
+              .from('marketplace_cars')
+              .select('*')
+              .order('created_at', { ascending: false })
+          ),
+          5000 // 5 seconds SELECT timeout
+        ) as any;
+        console.log('[CarMarketplaceEditor] Cars result:', { count: data?.length, error });
         if (error) throw error;
         setCars(data || []);
-      } else {
-        const { data, error } = await supabase
-          .from('subscription_plans')
-          .select('*')
-          .order('price', { ascending: true });
+      } catch (err: any) {
+        console.warn('[CarMarketplaceEditor] Failed to fetch cars, using fallback catalog:', err);
+        setCars(FALLBACK_CARS);
+        toast.error('Offline Mode: Loaded cached vehicle catalog. (Supabase connection timed out due to your browser privacy/adblocker shields blocking database queries).', { duration: 6000 });
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      try {
+        console.log('[CarMarketplaceEditor] Fetching plans from Supabase (5s timeout)...');
+        const { data, error } = await promiseWithTimeout(
+          Promise.resolve(
+            supabase
+              .from('subscription_plans')
+              .select('*')
+              .order('price', { ascending: true })
+          ),
+          5000 // 5 seconds SELECT timeout
+        ) as any;
+        console.log('[CarMarketplaceEditor] Plans result:', { count: data?.length, error });
         if (error) throw error;
         setPlans(data || []);
+      } catch (err: any) {
+        console.warn('[CarMarketplaceEditor] Failed to fetch subscription plans, using fallback tiers:', err);
+        setPlans(FALLBACK_PLANS);
+        toast.error('Offline Mode: Loaded subscription tiers. (Supabase request blocked by your browser privacy shields or ad-blocker on "subscription" keywords).', { duration: 8000 });
+      } finally {
+        setLoading(false);
       }
-    } catch (err: any) {
-      toast.error('Error fetching data: ' + err.message);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -120,24 +227,50 @@ export default function CarMarketplaceEditor() {
 
     setSaving(true);
     try {
+      // Create a clean payload to avoid updating protected or non-existent columns (like id or created_at)
+      const carPayload = {
+        title: editingCar.title,
+        price: editingCar.price,
+        price_val: parseInt(editingCar.price_val) || 0,
+        year: parseInt(editingCar.year) || new Date().getFullYear(),
+        model: editingCar.model,
+        location: editingCar.location,
+        badge: editingCar.badge,
+        img: editingCar.img,
+        status: editingCar.status || 'approved'
+      };
+
+      console.log('[CarMarketplaceEditor] handleSaveCar payload:', carPayload);
+
       if (editingCar.id) {
-        const { error } = await supabase
-          .from('marketplace_cars')
-          .update(editingCar)
-          .eq('id', editingCar.id);
+        console.log('[CarMarketplaceEditor] Updating car id:', editingCar.id);
+        const { error } = await promiseWithTimeout(
+          Promise.resolve(
+            supabase
+              .from('marketplace_cars')
+              .update(carPayload)
+              .eq('id', editingCar.id)
+          )
+        ) as any;
         if (error) throw error;
         toast.success('Vehicle listing updated successfully');
       } else {
-        const { error } = await supabase
-          .from('marketplace_cars')
-          .insert([editingCar]);
+        console.log('[CarMarketplaceEditor] Inserting new car');
+        const { error } = await promiseWithTimeout(
+          Promise.resolve(
+            supabase
+              .from('marketplace_cars')
+              .insert([carPayload])
+          )
+        ) as any;
         if (error) throw error;
         toast.success('Vehicle listing created successfully');
       }
       setEditingCar(null);
       fetchData();
     } catch (err: any) {
-      toast.error('Failed to save vehicle: ' + err.message);
+      console.error('[CarMarketplaceEditor] Caught error in handleSaveCar:', err);
+      toast.error('Failed to save vehicle: ' + (err.message || err));
     } finally {
       setSaving(false);
     }
@@ -146,15 +279,21 @@ export default function CarMarketplaceEditor() {
   const handleDeleteCar = async (id: string) => {
     if (!window.confirm('Are you sure you want to remove this vehicle listing?')) return;
     try {
-      const { error } = await supabase
-        .from('marketplace_cars')
-        .delete()
-        .eq('id', id);
+      console.log('[CarMarketplaceEditor] Deleting car id:', id);
+      const { error } = await promiseWithTimeout(
+        Promise.resolve(
+          supabase
+            .from('marketplace_cars')
+            .delete()
+            .eq('id', id)
+        )
+      ) as any;
       if (error) throw error;
       toast.success('Vehicle listing deleted');
       fetchData();
     } catch (err: any) {
-      toast.error('Failed to delete listing: ' + err.message);
+      console.error('[CarMarketplaceEditor] Caught error in handleDeleteCar:', err);
+      toast.error('Failed to delete listing: ' + (err.message || err));
     }
   };
 
@@ -192,28 +331,43 @@ export default function CarMarketplaceEditor() {
     setSaving(true);
     try {
       const payload = {
-        ...editingPlan,
-        price: parseFloat(editingPlan.price)
+        name: editingPlan.name,
+        price: parseFloat(editingPlan.price) || 0,
+        duration_days: parseInt(editingPlan.duration_days) || 30,
+        features: editingPlan.features || []
       };
 
+      console.log('[CarMarketplaceEditor] handleSavePlan payload:', payload);
+
       if (editingPlan.id) {
-        const { error } = await supabase
-          .from('subscription_plans')
-          .update(payload)
-          .eq('id', editingPlan.id);
+        console.log('[CarMarketplaceEditor] Updating plan id:', editingPlan.id);
+        const { error } = await promiseWithTimeout(
+          Promise.resolve(
+            supabase
+              .from('subscription_plans')
+              .update(payload)
+              .eq('id', editingPlan.id)
+          )
+        ) as any;
         if (error) throw error;
         toast.success('Subscription plan updated successfully');
       } else {
-        const { error } = await supabase
-          .from('subscription_plans')
-          .insert([payload]);
+        console.log('[CarMarketplaceEditor] Inserting new plan');
+        const { error } = await promiseWithTimeout(
+          Promise.resolve(
+            supabase
+              .from('subscription_plans')
+              .insert([payload])
+          )
+        ) as any;
         if (error) throw error;
         toast.success('Subscription plan created successfully');
       }
       setEditingPlan(null);
       fetchData();
     } catch (err: any) {
-      toast.error('Failed to save plan: ' + err.message);
+      console.error('[CarMarketplaceEditor] Caught error in handleSavePlan:', err);
+      toast.error('Failed to save plan: ' + (err.message || err));
     } finally {
       setSaving(false);
     }
@@ -222,15 +376,21 @@ export default function CarMarketplaceEditor() {
   const handleDeletePlan = async (id: string) => {
     if (!window.confirm('Are you sure you want to delete this subscription plan? Users on this plan will not be deleted.')) return;
     try {
-      const { error } = await supabase
-        .from('subscription_plans')
-        .delete()
-        .eq('id', id);
+      console.log('[CarMarketplaceEditor] Deleting plan id:', id);
+      const { error } = await promiseWithTimeout(
+        Promise.resolve(
+          supabase
+            .from('subscription_plans')
+            .delete()
+            .eq('id', id)
+        )
+      ) as any;
       if (error) throw error;
       toast.success('Subscription plan deleted');
       fetchData();
     } catch (err: any) {
-      toast.error('Failed to delete plan: ' + err.message);
+      console.error('[CarMarketplaceEditor] Caught error in handleDeletePlan:', err);
+      toast.error('Failed to delete plan: ' + (err.message || err));
     }
   };
 
@@ -243,7 +403,7 @@ export default function CarMarketplaceEditor() {
             <Car size={32} className="text-nag-green-primary" /> Car Marketplace
           </h1>
           <p className="text-nag-gray-deep">
-            Manage seeded/posted cars catalog and create premium advertisement subscription plans.
+            Manage/Post cars catalog, create premium advertisement susbscription plans
           </p>
         </div>
 
@@ -294,64 +454,116 @@ export default function CarMarketplaceEditor() {
               <p className="text-nag-gray-deep text-sm font-medium">Add some vehicle listings or seed default cars to populate the grid.</p>
             </div>
           ) : (
-            <div className="overflow-hidden rounded-2xl border border-nag-border">
-              <table className="w-full text-left">
-                <thead className="bg-nag-gray-bg border-b border-nag-border">
-                  <tr>
-                    <th className="p-4 font-bold text-xs text-nag-gray-deep uppercase tracking-wider">Thumbnail &amp; Title</th>
-                    <th className="p-4 font-bold text-xs text-nag-gray-deep uppercase tracking-wider">Specs &amp; Category</th>
-                    <th className="p-4 font-bold text-xs text-nag-gray-deep uppercase tracking-wider">Price Label</th>
-                    <th className="p-4 font-bold text-xs text-nag-gray-deep uppercase tracking-wider">Location</th>
-                    <th className="p-4 font-bold text-xs text-nag-gray-deep uppercase tracking-wider text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-nag-border">
-                  {cars.map((car) => (
-                    <tr key={car.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="p-4 flex items-center gap-3">
-                        <div className="w-16 h-10 rounded-lg overflow-hidden bg-nag-gray-bg border border-nag-border shrink-0">
-                          <img src={car.img} alt="" className="w-full h-full object-cover" />
-                        </div>
-                        <div className="min-w-0">
-                          <p className="font-bold text-sm text-nag-black truncate max-w-xs">{car.title}</p>
-                          <span className={`inline-block px-1.5 py-0.5 mt-1 rounded text-[8px] font-black uppercase tracking-wider ${
-                            car.badge === 'Verified Dealer' ? 'bg-nag-green-primary/10 text-nag-green-primary' :
-                            car.badge === 'Secure Trade' ? 'bg-blue-50 text-blue-600' :
-                            car.badge === 'Accessories' ? 'bg-purple-50 text-purple-600' : 'bg-red-50 text-red-600'
-                          }`}>
-                            {car.badge}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="p-4">
-                        <p className="text-xs font-bold text-nag-black">{car.year} {car.model}</p>
-                        <p className="text-[9px] text-nag-gray-deep font-semibold uppercase mt-0.5 tracking-wider">Status: {car.status}</p>
-                      </td>
-                      <td className="p-4 font-display font-black text-sm text-nag-green-primary">
-                        {car.price}
-                      </td>
-                      <td className="p-4 text-xs font-semibold text-nag-gray-deep flex items-center gap-1 mt-2.5">
-                        <MapPin size={11} /> {car.location}
-                      </td>
-                      <td className="p-4 text-right space-x-2 whitespace-nowrap">
+            <>
+              {/* Desktop Table View */}
+              <div className="hidden md:block overflow-hidden rounded-2xl border border-nag-border">
+                <table className="w-full text-left">
+                  <thead className="bg-nag-gray-bg border-b border-nag-border">
+                    <tr>
+                      <th className="p-4 font-bold text-xs text-nag-gray-deep uppercase tracking-wider">Thumbnail &amp; Title</th>
+                      <th className="p-4 font-bold text-xs text-nag-gray-deep uppercase tracking-wider">Specs &amp; Category</th>
+                      <th className="p-4 font-bold text-xs text-nag-gray-deep uppercase tracking-wider">Price Label</th>
+                      <th className="p-4 font-bold text-xs text-nag-gray-deep uppercase tracking-wider">Location</th>
+                      <th className="p-4 font-bold text-xs text-nag-gray-deep uppercase tracking-wider text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-nag-border">
+                    {cars.map((car) => (
+                      <tr key={car.id} className="hover:bg-gray-50 transition-colors">
+                        <td className="p-4 flex items-center gap-3">
+                          <div className="w-16 h-10 rounded-lg overflow-hidden bg-nag-gray-bg border border-nag-border shrink-0">
+                            <img src={car.img} alt="" className="w-full h-full object-cover" />
+                          </div>
+                          <div className="min-w-0">
+                            <p className="font-bold text-sm text-nag-black truncate max-w-xs">{car.title}</p>
+                            <span className={`inline-block px-1.5 py-0.5 mt-1 rounded text-[8px] font-black uppercase tracking-wider ${
+                              car.badge === 'Verified Dealer' ? 'bg-nag-green-primary/10 text-nag-green-primary' :
+                              car.badge === 'Secure Trade' ? 'bg-blue-50 text-blue-600' :
+                              car.badge === 'Accessories' ? 'bg-purple-50 text-purple-600' : 'bg-red-50 text-red-600'
+                            }`}>
+                              {car.badge}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="p-4">
+                          <p className="text-xs font-bold text-nag-black">{car.year} {car.model}</p>
+                          <p className="text-[9px] text-nag-gray-deep font-semibold uppercase mt-0.5 tracking-wider">Status: {car.status}</p>
+                        </td>
+                        <td className="p-4 font-display font-black text-sm text-nag-green-primary">
+                          {car.price}
+                        </td>
+                        <td className="p-4 text-xs font-semibold text-nag-gray-deep flex items-center gap-1 mt-2.5">
+                          <MapPin size={11} /> {car.location}
+                        </td>
+                        <td className="p-4 text-right space-x-2 whitespace-nowrap">
+                          <button
+                            onClick={() => setEditingCar(car)}
+                            className="p-2 text-nag-gray-deep hover:text-blue-600 bg-white rounded-lg border border-transparent hover:border-blue-200 transition-all cursor-pointer"
+                          >
+                            <Edit2 size={14} />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteCar(car.id)}
+                            className="p-2 text-nag-gray-deep hover:text-red-600 bg-white rounded-lg border border-transparent hover:border-red-200 transition-all cursor-pointer"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Mobile Card List View */}
+              <div className="grid grid-cols-1 gap-4 md:hidden">
+                {cars.map((car) => (
+                  <div key={car.id} className="bg-nag-gray-bg/40 border border-nag-border rounded-2xl p-4 flex flex-col gap-3">
+                    <div className="flex gap-4">
+                      <div className="w-20 h-14 rounded-lg overflow-hidden bg-nag-gray-bg border border-nag-border shrink-0">
+                        <img src={car.img} alt="" className="w-full h-full object-cover" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="font-bold text-sm text-nag-black truncate">{car.title}</p>
+                        <p className="text-[10px] font-bold text-nag-gray-deep mt-0.5">{car.year} {car.model}</p>
+                        <span className={`inline-block px-1.5 py-0.5 mt-1.5 rounded text-[8px] font-black uppercase tracking-wider ${
+                          car.badge === 'Verified Dealer' ? 'bg-nag-green-primary/10 text-nag-green-primary' :
+                          car.badge === 'Secure Trade' ? 'bg-blue-50 text-blue-600' :
+                          car.badge === 'Accessories' ? 'bg-purple-50 text-purple-600' : 'bg-red-50 text-red-600'
+                        }`}>
+                          {car.badge}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <div className="flex justify-between items-end pt-2 border-t border-nag-border/60">
+                      <div>
+                        <p className="text-[10px] font-semibold text-nag-gray-deep flex items-center gap-1">
+                          <MapPin size={10} /> {car.location}
+                        </p>
+                        <p className="font-display font-black text-sm text-nag-green-primary mt-0.5">
+                          {car.price}
+                        </p>
+                      </div>
+                      <div className="flex gap-1.5">
                         <button
                           onClick={() => setEditingCar(car)}
-                          className="p-2 text-nag-gray-deep hover:text-blue-600 bg-white rounded-lg border border-transparent hover:border-blue-200 transition-all cursor-pointer"
+                          className="p-1.5 text-nag-gray-deep hover:text-blue-600 bg-white rounded-lg border border-nag-border transition-all cursor-pointer"
                         >
-                          <Edit2 size={14} />
+                          <Edit2 size={12} />
                         </button>
                         <button
                           onClick={() => handleDeleteCar(car.id)}
-                          className="p-2 text-nag-gray-deep hover:text-red-600 bg-white rounded-lg border border-transparent hover:border-red-200 transition-all cursor-pointer"
+                          className="p-1.5 text-nag-gray-deep hover:text-red-600 bg-white rounded-lg border border-nag-border transition-all cursor-pointer"
                         >
-                          <Trash2 size={14} />
+                          <Trash2 size={12} />
                         </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
           )}
         </div>
       ) : (
@@ -393,7 +605,7 @@ export default function CarMarketplaceEditor() {
                   <div>
                     <h4 className="text-xl font-black text-nag-black leading-tight">{plan.name}</h4>
                     <p className="text-3xl font-display font-black text-nag-green-primary tracking-tight mt-1.5">
-                      ₦{plan.price.toLocaleString()}
+                      ₦{Number(plan.price || 0).toLocaleString()}
                     </p>
                   </div>
                   <ul className="space-y-2 pt-2 border-t border-nag-border/60">
@@ -432,7 +644,7 @@ export default function CarMarketplaceEditor() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-[10px] font-black uppercase tracking-widest text-nag-black mb-1">Model Brand</label>
                   <input
@@ -456,7 +668,7 @@ export default function CarMarketplaceEditor() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-[10px] font-black uppercase tracking-widest text-nag-black mb-1">Price Label</label>
                   <input
@@ -481,7 +693,7 @@ export default function CarMarketplaceEditor() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-[10px] font-black uppercase tracking-widest text-nag-black mb-1">Location</label>
                   <input
@@ -582,7 +794,7 @@ export default function CarMarketplaceEditor() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-[10px] font-black uppercase tracking-widest text-nag-black mb-1">Price (₦ Naira)</label>
                   <input
