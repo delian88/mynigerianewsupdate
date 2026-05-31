@@ -29,12 +29,14 @@ import { useAuth } from '../../hooks/useAuth';
 import { supabase } from '../../lib/supabase';
 import toast from 'react-hot-toast';
 import { useNotifications } from '../../hooks/useNotifications';
+import { UserProfileModal } from '../news/UserProfileModal';
 
 export default function AdminLayout() {
-  const { user, profile, loading } = useAuth();
+  const { user, profile, loading, refreshProfile } = useAuth();
   const location = useLocation();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
 
   if (loading) {
@@ -328,7 +330,10 @@ export default function AdminLayout() {
             </div>
 
             {/* Profile Avatar Card */}
-            <div className="flex items-center gap-3.5 pl-6 border-l border-nag-border relative group select-none">
+            <div 
+              onClick={() => setIsProfileOpen(true)}
+              className="flex items-center gap-3.5 pl-6 border-l border-nag-border relative group select-none cursor-pointer hover:opacity-80 transition-opacity"
+            >
               <div className="w-9 h-9 rounded-full bg-nag-green-primary/10 border border-nag-green-primary/30 flex items-center justify-center text-nag-green-primary font-black uppercase text-xs shadow-sm group-hover:scale-105 transition-transform">
                 {(user?.email || 'S')[0]}
               </div>
@@ -355,6 +360,13 @@ export default function AdminLayout() {
           <span className="mt-1 sm:mt-0">Version 2.1.0</span>
         </footer>
       </div>
+
+      <UserProfileModal 
+        isOpen={isProfileOpen} 
+        onClose={() => setIsProfileOpen(false)} 
+        profile={profile} 
+        refreshProfile={refreshProfile} 
+      />
     </div>
   );
 }

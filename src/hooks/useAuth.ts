@@ -7,6 +7,18 @@ export interface Profile {
   email: string;
   role: 'super_admin' | 'user';
   created_at: string;
+  full_name?: string;
+  avatar_url?: string;
+  bio?: string;
+  occupation?: string;
+  address?: string;
+  gender?: string;
+  phone?: string;
+  preferences?: string[];
+  reading_stats?: {
+    totalRead: number;
+    categories: Record<string, number>;
+  };
 }
 
 export function useAuth() {
@@ -77,7 +89,13 @@ export function useAuth() {
     return () => {
       subscription.unsubscribe();
     };
-  }, []);
+  }, []); // Keep empty dependency array to set up the onAuthStateChange listener exactly once.
 
-  return { user, profile, loading };
+  const refreshProfile = async () => {
+    if (user) {
+      await fetchProfile(user.id, user.email);
+    }
+  };
+
+  return { user, profile, loading, refreshProfile };
 }

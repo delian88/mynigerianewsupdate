@@ -5,6 +5,7 @@ import { useSiteSettings } from '../../hooks/useSiteSettings';
 import { useAuth } from '../../hooks/useAuth';
 import { AuthModal } from '../news/AuthModal';
 import { SearchModal } from '../news/SearchModal';
+import { UserProfileModal } from '../news/UserProfileModal';
 import { supabase } from '../../lib/supabase';
 import toast from 'react-hot-toast';
 
@@ -13,8 +14,9 @@ export function Header({ showIntelligence, setShowIntelligence }: { showIntellig
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const { settings } = useSiteSettings();
-  const { user, profile } = useAuth();
+  const { user, profile, refreshProfile } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
@@ -26,6 +28,12 @@ export function Header({ showIntelligence, setShowIntelligence }: { showIntellig
     <>
       <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} />
       <SearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
+      <UserProfileModal 
+        isOpen={isProfileOpen} 
+        onClose={() => setIsProfileOpen(false)} 
+        profile={profile} 
+        refreshProfile={refreshProfile} 
+      />
       <header 
         id="global-header"
         className={`h-[64px] bg-white border-b sticky top-10 md:top-12 z-[500] flex items-center transition-all duration-300 ${
@@ -72,10 +80,15 @@ export function Header({ showIntelligence, setShowIntelligence }: { showIntellig
             {user ? (
               <div className="relative hidden sm:block z-50">
                 <button
-                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="w-8 h-8 rounded-full bg-nag-green-primary text-white font-black hover:bg-nag-green-secondary transition-all flex items-center justify-center cursor-pointer text-xs uppercase"
+                  onClick={() => setIsProfileOpen(true)}
+                  className="w-8 h-8 rounded-full overflow-hidden bg-nag-green-primary text-white font-black hover:bg-nag-green-secondary transition-all flex items-center justify-center cursor-pointer text-xs uppercase"
+                  title="View Profile & Actions"
                 >
-                  {user.email?.[0] || 'U'}
+                  {profile?.avatar_url ? (
+                    <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+                  ) : (
+                    user.email?.[0] || 'U'
+                  )}
                 </button>
                 <AnimatePresence>
                   {isDropdownOpen && (
@@ -85,15 +98,33 @@ export function Header({ showIntelligence, setShowIntelligence }: { showIntellig
                       exit={{ opacity: 0, y: 5, scale: 0.95 }}
                       className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-nag-border p-4 z-[600] pointer-events-auto space-y-3"
                     >
-                      <div className="text-xs text-nag-gray-deep border-b border-nag-border pb-2">
-                        <a
-                          href="/admin"
-                          className="font-bold text-nag-black truncate hover:text-nag-green-primary transition-colors block cursor-pointer"
-                        >
-                          {user.email}
-                        </a>
-                        <p className="capitalize text-[9px] text-nag-green-primary mt-0.5 font-black tracking-widest">{profile?.role || 'User'}</p>
+                      <div className="text-xs text-nag-gray-deep border-b border-nag-border pb-2 flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full overflow-hidden bg-nag-green-primary text-white font-black flex items-center justify-center text-[10px] uppercase shrink-0">
+                          {profile?.avatar_url ? (
+                            <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+                          ) : (
+                            user.email?.[0] || 'U'
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0 font-bold text-nag-black truncate">
+                          <a
+                            href="/admin"
+                            className="hover:text-nag-green-primary transition-colors block cursor-pointer"
+                          >
+                            {user.email}
+                          </a>
+                          <p className="capitalize text-[9px] text-nag-green-primary mt-0.5 font-black tracking-widest">{profile?.role || 'User'}</p>
+                        </div>
                       </div>
+                      <button
+                        onClick={() => {
+                          setIsDropdownOpen(false);
+                          setIsProfileOpen(true);
+                        }}
+                        className="w-full text-left text-xs font-bold text-nag-black hover:text-nag-green-primary transition-colors py-1.5 cursor-pointer flex items-center gap-2 pointer-events-auto"
+                      >
+                        <User size={14} className="text-nag-green-primary" /> My Profile
+                      </button>
                       {profile?.role === 'super_admin' && (
                         <a
                           href="/admin"
@@ -394,7 +425,8 @@ export function MobileNav() {
   const [isOpen, setIsOpen] = useState(false);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const { user, profile } = useAuth();
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const { user, profile, refreshProfile } = useAuth();
 
   const menuItems = [
     { 
@@ -426,7 +458,7 @@ export function MobileNav() {
 
   const handleProfileClick = () => {
     if (user) {
-      setIsOpen(true);
+      setIsProfileOpen(true);
     } else {
       setIsAuthOpen(true);
     }
@@ -436,6 +468,12 @@ export function MobileNav() {
     <>
       <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} />
       <SearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
+      <UserProfileModal 
+        isOpen={isProfileOpen} 
+        onClose={() => setIsProfileOpen(false)} 
+        profile={profile} 
+        refreshProfile={refreshProfile} 
+      />
       <nav className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-xl border-t z-[201] md:hidden flex justify-around items-center py-3 px-6 shadow-[0_-10px_30px_rgba(0,0,0,0.1)] pb-safe">
         <button onClick={() => setIsOpen(true)} className="flex flex-col items-center gap-1 text-nag-gray-deep active:scale-95 transition-transform">
           <Menu size={20} className="text-nag-black" />
@@ -457,8 +495,12 @@ export function MobileNav() {
         </button>
         <button onClick={handleProfileClick} className="flex flex-col items-center gap-1 text-nag-gray-deep active:scale-95 transition-transform">
           {user ? (
-            <div className="w-5 h-5 rounded-full bg-nag-green-primary text-white font-black flex items-center justify-center text-[10px] uppercase">
-              {user.email?.[0] || 'U'}
+            <div className="w-5 h-5 rounded-full overflow-hidden bg-nag-green-primary text-white font-black flex items-center justify-center text-[10px] uppercase">
+              {profile?.avatar_url ? (
+                <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+              ) : (
+                user.email?.[0] || 'U'
+              )}
             </div>
           ) : (
             <User size={20} className="text-nag-black opacity-60" />
@@ -522,8 +564,12 @@ export function MobileNav() {
                 {user ? (
                   <div className="space-y-3 bg-white p-4 rounded-2xl border border-nag-border shadow-sm">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-nag-green-primary text-white font-black flex items-center justify-center text-xs uppercase">
-                        {user.email?.[0] || 'U'}
+                      <div className="w-8 h-8 rounded-full overflow-hidden bg-nag-green-primary text-white font-black flex items-center justify-center text-xs uppercase shrink-0">
+                        {profile?.avatar_url ? (
+                          <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+                        ) : (
+                          user.email?.[0] || 'U'
+                        )}
                       </div>
                       <div className="flex-1 min-w-0">
                         <a
@@ -536,6 +582,15 @@ export function MobileNav() {
                         <p className="text-[9px] font-semibold text-nag-green-primary uppercase tracking-widest leading-none mt-0.5">{profile?.role || 'User'}</p>
                       </div>
                     </div>
+                    <button
+                      onClick={() => {
+                        setIsOpen(false);
+                        setIsProfileOpen(true);
+                      }}
+                      className="w-full py-3 bg-nag-gray-bg border border-nag-border hover:bg-nag-gray-light text-nag-black transition-colors text-[9px] font-black uppercase tracking-widest rounded-xl flex items-center justify-center gap-2 cursor-pointer pointer-events-auto"
+                    >
+                      <User size={12} className="text-nag-green-primary" /> My Profile
+                    </button>
                     {profile?.role === 'super_admin' && (
                       <a
                         href="/admin"
