@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { useSiteSettings } from '../../hooks/useSiteSettings';
 import { useAuth } from '../../hooks/useAuth';
 import { AuthModal } from '../news/AuthModal';
+import { SearchModal } from '../news/SearchModal';
 import { supabase } from '../../lib/supabase';
 import toast from 'react-hot-toast';
 
@@ -11,6 +12,7 @@ export function Header({ showIntelligence, setShowIntelligence }: { showIntellig
   const [isScrolled, setIsScrolled] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const { settings } = useSiteSettings();
   const { user, profile } = useAuth();
 
@@ -23,6 +25,7 @@ export function Header({ showIntelligence, setShowIntelligence }: { showIntellig
   return (
     <>
       <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} />
+      <SearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
       <header 
         id="global-header"
         className={`h-[64px] bg-white border-b sticky top-10 md:top-12 z-[500] flex items-center transition-all duration-300 ${
@@ -53,7 +56,12 @@ export function Header({ showIntelligence, setShowIntelligence }: { showIntellig
 
           {/* Action Icons */}
           <div className="flex items-center gap-3 md:gap-6 shrink-0 relative">
-            <button id="search-trigger" aria-label="Open search" className="text-gray-500 hover:text-nag-green-primary transition-colors p-2">
+            <button
+              id="search-trigger"
+              aria-label="Open search"
+              onClick={() => setIsSearchOpen(true)}
+              className="text-gray-500 hover:text-nag-green-primary transition-colors p-2 cursor-pointer"
+            >
               <Search size={18} />
             </button>
             <button id="notifications-trigger" aria-label="View notifications" className="relative text-gray-500 hover:text-nag-green-primary transition-colors p-2 hidden sm:block">
@@ -78,7 +86,12 @@ export function Header({ showIntelligence, setShowIntelligence }: { showIntellig
                       className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-nag-border p-4 z-[600] pointer-events-auto space-y-3"
                     >
                       <div className="text-xs text-nag-gray-deep border-b border-nag-border pb-2">
-                        <p className="font-bold text-nag-black truncate">{user.email}</p>
+                        <a
+                          href="/admin"
+                          className="font-bold text-nag-black truncate hover:text-nag-green-primary transition-colors block cursor-pointer"
+                        >
+                          {user.email}
+                        </a>
                         <p className="capitalize text-[9px] text-nag-green-primary mt-0.5 font-black tracking-widest">{profile?.role || 'User'}</p>
                       </div>
                       {profile?.role === 'super_admin' && (
@@ -380,6 +393,7 @@ export function TopNav({ showIntelligence, setShowIntelligence }: { showIntellig
 export function MobileNav() {
   const [isOpen, setIsOpen] = useState(false);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const { user, profile } = useAuth();
 
   const menuItems = [
@@ -421,12 +435,16 @@ export function MobileNav() {
   return (
     <>
       <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} />
+      <SearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
       <nav className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-xl border-t z-[201] md:hidden flex justify-around items-center py-3 px-6 shadow-[0_-10px_30px_rgba(0,0,0,0.1)] pb-safe">
         <button onClick={() => setIsOpen(true)} className="flex flex-col items-center gap-1 text-nag-gray-deep active:scale-95 transition-transform">
           <Menu size={20} className="text-nag-black" />
           <span className="text-[9px] font-black uppercase tracking-tighter">Menu</span>
         </button>
-        <button className="flex flex-col items-center gap-1 text-nag-gray-deep opacity-60 active:scale-95 transition-transform">
+        <button
+          onClick={() => setIsSearchOpen(true)}
+          className="flex flex-col items-center gap-1 text-nag-gray-deep opacity-60 active:scale-95 transition-transform cursor-pointer"
+        >
           <Search size={20} />
           <span className="text-[9px] font-black uppercase tracking-tighter">Search</span>
         </button>
@@ -508,7 +526,13 @@ export function MobileNav() {
                         {user.email?.[0] || 'U'}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs font-bold text-nag-black truncate">{user.email}</p>
+                        <a
+                          href="/admin"
+                          onClick={() => setIsOpen(false)}
+                          className="text-xs font-bold text-nag-black truncate hover:text-nag-green-primary transition-colors block cursor-pointer"
+                        >
+                          {user.email}
+                        </a>
                         <p className="text-[9px] font-semibold text-nag-green-primary uppercase tracking-widest leading-none mt-0.5">{profile?.role || 'User'}</p>
                       </div>
                     </div>

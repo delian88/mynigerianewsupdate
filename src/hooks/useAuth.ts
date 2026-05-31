@@ -58,23 +58,9 @@ export function useAuth() {
   };
 
   useEffect(() => {
-    // 1. Initial Session Check
-    const checkSession = async () => {
-      setLoading(true);
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        setUser(session.user);
-        await fetchProfile(session.user.id, session.user.email);
-      } else {
-        setUser(null);
-        setProfile(null);
-      }
-      setLoading(false);
-    };
-
-    checkSession();
-
-    // 2. Subscribe to Auth Events
+    // Single source of truth: onAuthStateChange handles both the initial
+    // session (INITIAL_SESSION event) and all subsequent auth changes.
+    // This avoids a duplicate fetchProfile on page load.
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (session?.user) {

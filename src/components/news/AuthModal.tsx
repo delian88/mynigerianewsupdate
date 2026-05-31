@@ -86,31 +86,48 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
           }
         }
       } else {
-        // Sign In
+        // Sign In — no extra profile round-trip, redirect immediately
         const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
 
         if (error) throw error;
+
         toast.success('Logged in successfully!');
         onClose();
 
+        // Redirect to admin immediately if email matches known admin addresses.
+        // For all other users, useAuth's onAuthStateChange will fetch profile
+        // in the background and the UI updates reactively.
         if (data.user) {
-          const isAdminEmail = email === 'admin@mynigeria.news' || email === 'superadmin@mynigeria.news';
+          const isAdminEmail =
+            email === 'admin@mynigeria.news' ||
+            email === 'superadmin@mynigeria.news';
+
           if (isAdminEmail) {
             localStorage.setItem('isAdmin', 'true');
             window.location.href = '/admin';
           } else {
-            const { data: profile } = await supabase
-              .from('profiles')
-              .select('role')
-              .eq('id', data.user.id)
-              .single();
-
-            if (profile?.role === 'super_admin') {
+            // Non-blocking: check role quickly from the session metadata first,
+            // fall back to a single lightweight profile query.
+            const userMeta = data.user.user_metadata;
+            if (userMeta?.role === 'super_admin') {
               localStorage.setItem('isAdmin', 'true');
               window.location.href = '/admin';
+            } else {
+              // Fire profile query without blocking the UI
+              supabase
+                .from('profiles')
+                .select('role')
+                .eq('id', data.user.id)
+                .single()
+                .then(({ data: prof }) => {
+                  if (prof?.role === 'super_admin') {
+                    localStorage.setItem('isAdmin', 'true');
+                    window.location.href = '/admin';
+                  }
+                });
             }
           }
         }
