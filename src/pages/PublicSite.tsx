@@ -16,10 +16,12 @@ import { PodcastModal } from '../components/news/PodcastModal';
 import { Newspaper, Radio, PlayCircle, Layers, Globe, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
 import { motion } from 'motion/react';
+import { useArticles } from '../hooks/useArticles';
 
 export default function PublicSite() {
   const [showIntelligence, setShowIntelligence] = useState(false);
   const [isPodcastOpen, setIsPodcastOpen] = useState(false);
+  const { articles: devArticles, error: devError } = useArticles({ limit: 1 });
 
   return (
     <div className="min-h-screen flex flex-col font-sans selection:bg-nag-green-primary selection:text-white bg-nag-gray-bg">
@@ -242,6 +244,41 @@ export default function PublicSite() {
 
       <Footer />
       <PodcastModal isOpen={isPodcastOpen} onClose={() => setIsPodcastOpen(false)} />
+
+      {/* Dev Diagnostics Badge */}
+      {import.meta.env.DEV && (
+        <div className="fixed bottom-4 left-4 z-[9999] bg-black/90 backdrop-blur-md border border-white/10 rounded-2xl p-4 text-white text-[10px] w-72 shadow-2xl space-y-2 font-sans select-none">
+          <div className="flex items-center justify-between border-b border-white/10 pb-1.5 font-black uppercase tracking-[0.15em] text-[9px]">
+            <span className="text-nag-green-secondary">Developer Diagnostics</span>
+            <span className={`w-2.5 h-2.5 rounded-full ${devArticles.length > 0 ? 'bg-emerald-500 animate-pulse' : 'bg-red-500 animate-pulse'}`}></span>
+          </div>
+          <div className="space-y-1 font-medium text-gray-300">
+            <p className="flex justify-between">
+              <span>Supabase URL:</span>
+              <span className="font-mono text-[9px] text-white truncate max-w-[160px]" title={import.meta.env.VITE_SUPABASE_URL}>
+                {import.meta.env.VITE_SUPABASE_URL || 'UNDEFINED'}
+              </span>
+            </p>
+            <p className="flex justify-between">
+              <span>Supabase Key:</span>
+              <span className="font-mono text-[9px] text-white">
+                {import.meta.env.VITE_SUPABASE_ANON_KEY ? `Loaded (${import.meta.env.VITE_SUPABASE_ANON_KEY.length} ch)` : 'UNDEFINED'}
+              </span>
+            </p>
+            <p className="flex justify-between">
+              <span>Articles in DB:</span>
+              <span className={`font-black uppercase tracking-wider ${devArticles.length > 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                {devArticles.length > 0 ? 'LOADED OK' : '0 LOADED'}
+              </span>
+            </p>
+            {devError && (
+              <p className="text-rose-400 text-[9px] font-bold mt-1 border-t border-white/5 pt-1 break-words">
+                Err: {devError}
+              </p>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

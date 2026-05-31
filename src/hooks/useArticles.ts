@@ -30,6 +30,9 @@ export function useArticles({ limit = 10, category }: UseArticlesOptions = {}) {
     const loadArticles = async () => {
       try {
         setLoading(true);
+        console.log('[useArticles] VITE_SUPABASE_URL:', import.meta.env.VITE_SUPABASE_URL);
+        console.log('[useArticles] Querying articles for:', { limit, category });
+        
         let query = supabase
           .from('articles')
           .select('*')
@@ -42,6 +45,8 @@ export function useArticles({ limit = 10, category }: UseArticlesOptions = {}) {
         }
 
         const { data, error } = await query;
+        console.log('[useArticles] Query result:', { count: data?.length, error });
+        
         if (error) throw error;
         if (mounted) {
           // If no articles exist in the database, trigger RSS fetch in the background automatically
@@ -49,6 +54,7 @@ export function useArticles({ limit = 10, category }: UseArticlesOptions = {}) {
             const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
             const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
             if (supabaseUrl && anonKey) {
+              console.log('[useArticles] Database is empty, triggering edge function fetch...');
               window.fetch(`${supabaseUrl}/functions/v1/fetch-news`, {
                 method: 'POST',
                 headers: {
@@ -58,8 +64,10 @@ export function useArticles({ limit = 10, category }: UseArticlesOptions = {}) {
                 body: JSON.stringify({}),
               })
                 .then(async (res) => {
+                  console.log('[useArticles] Edge function response status:', res.status);
                   if (res.ok) {
                     const { data: newData } = await query;
+                    console.log('[useArticles] Post-fetch query result:', { count: newData?.length });
                     if (mounted && newData && newData.length > 0) {
                       setArticles(newData.map(a => ({
                         ...a,
@@ -68,7 +76,7 @@ export function useArticles({ limit = 10, category }: UseArticlesOptions = {}) {
                     }
                   }
                 })
-                .catch((err) => console.error('Failed to auto-fetch news:', err));
+                .catch((err) => console.error('[useArticles] Failed to auto-fetch news:', err));
             }
           }
 
@@ -80,6 +88,7 @@ export function useArticles({ limit = 10, category }: UseArticlesOptions = {}) {
           setArticles(normalised);
         }
       } catch (err: any) {
+        console.error('[useArticles] Error fetching articles:', err);
         if (mounted) setError(err.message);
       } finally {
         if (mounted) setLoading(false);
