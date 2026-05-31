@@ -33,7 +33,8 @@ export function useArticles({ limit = 10, category }: UseArticlesOptions = {}) {
         let query = supabase
           .from('articles')
           .select('*')
-          .order('published_at', { ascending: false })
+          // Order by created_at so articles without published_at still appear
+          .order('created_at', { ascending: false })
           .limit(limit);
 
         if (category) {
@@ -42,7 +43,14 @@ export function useArticles({ limit = 10, category }: UseArticlesOptions = {}) {
 
         const { data, error } = await query;
         if (error) throw error;
-        if (mounted) setArticles(data || []);
+        if (mounted) {
+          // Normalise: ensure published_at always has a value (fall back to created_at)
+          const normalised = (data || []).map(a => ({
+            ...a,
+            published_at: a.published_at || a.created_at,
+          }));
+          setArticles(normalised);
+        }
       } catch (err: any) {
         if (mounted) setError(err.message);
       } finally {

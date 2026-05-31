@@ -8,9 +8,12 @@ interface ArticleModalProps {
   onClose: () => void;
 }
 
-function formatDate(iso: string): string {
+function formatDate(iso: string | null | undefined): string {
+  if (!iso) return 'Date unavailable';
   try {
-    return new Date(iso).toLocaleDateString('en-NG', {
+    const date = new Date(iso);
+    if (isNaN(date.getTime())) return 'Date unavailable';
+    return date.toLocaleDateString('en-NG', {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
@@ -19,21 +22,26 @@ function formatDate(iso: string): string {
       minute: '2-digit',
     });
   } catch {
-    return iso;
+    return 'Date unavailable';
   }
 }
 
-function timeAgo(iso: string): string {
+function timeAgo(iso: string | null | undefined): string {
+  if (!iso) return 'Recently';
   try {
-    const diff = Date.now() - new Date(iso).getTime();
+    const date = new Date(iso);
+    if (isNaN(date.getTime())) return 'Recently';
+    const diff = Date.now() - date.getTime();
+    if (diff < 0) return 'Just now';
     const mins = Math.floor(diff / 60000);
+    if (mins < 1) return 'Just now';
     if (mins < 60) return `${mins}m ago`;
     const hrs = Math.floor(mins / 60);
     if (hrs < 24) return `${hrs}h ago`;
     const days = Math.floor(hrs / 24);
     return `${days}d ago`;
   } catch {
-    return '';
+    return 'Recently';
   }
 }
 

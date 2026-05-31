@@ -5,9 +5,13 @@ import { useArticles } from '../../hooks/useArticles';
 import { ArticleModal } from './ArticleModal';
 import type { Article } from '../../hooks/useArticles';
 
-function timeAgo(iso: string): string {
+function timeAgo(iso: string | null | undefined): string {
+  if (!iso) return 'Recently';
   try {
-    const diff = Date.now() - new Date(iso).getTime();
+    const date = new Date(iso);
+    if (isNaN(date.getTime())) return 'Recently';
+    const diff = Date.now() - date.getTime();
+    if (diff < 0) return 'Just now';
     const mins = Math.floor(diff / 60000);
     if (mins < 1) return 'Just now';
     if (mins < 60) return `${mins}m ago`;
@@ -16,19 +20,22 @@ function timeAgo(iso: string): string {
     const days = Math.floor(hrs / 24);
     return `${days}d ago`;
   } catch {
-    return '';
+    return 'Recently';
   }
 }
 
-function formatShortDate(iso: string): string {
+function formatShortDate(iso: string | null | undefined): string {
+  if (!iso) return 'Unknown date';
   try {
-    return new Date(iso).toLocaleDateString('en-NG', {
+    const date = new Date(iso);
+    if (isNaN(date.getTime())) return 'Unknown date';
+    return date.toLocaleDateString('en-NG', {
       day: 'numeric',
       month: 'short',
       year: 'numeric',
     });
   } catch {
-    return iso;
+    return 'Unknown date';
   }
 }
 
