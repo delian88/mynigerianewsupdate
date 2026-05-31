@@ -31,11 +31,16 @@ function formatShortDate(iso: string | null | undefined): string {
   try {
     const date = new Date(iso);
     if (isNaN(date.getTime())) return 'Unknown date';
-    return date.toLocaleDateString('en-NG', {
+    const options: Intl.DateTimeFormatOptions = {
       day: 'numeric',
       month: 'short',
       year: 'numeric',
-    });
+    };
+    try {
+      return date.toLocaleDateString('en-NG', options);
+    } catch {
+      return date.toLocaleDateString(undefined, options);
+    }
   } catch {
     return 'Unknown date';
   }

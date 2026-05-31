@@ -8,6 +8,7 @@ export function SpecialReports() {
       category: 'Investigation',
       desc: 'An 8-month deep dive into mining operations across Northern Nigeria and the impact on local ecosystems.',
       author: 'Adebayo Tiamiyu',
+      date: '28 May 2026',
       img: 'https://media.istockphoto.com/id/2181114788/photo/3d-illustration-of-lithium-ion-battery-packs-on-a-production-line-in-a-manufacturing-facility.webp?a=1&b=1&s=612x612&w=0&k=20&c=nrrtG5CskFXp19TF8Qw5V9Y0DhWjPyVpJbSd-r1rXFY='
     },
     {
@@ -15,6 +16,7 @@ export function SpecialReports() {
       category: 'In-Depth',
       desc: 'Analyzing the strategic urban planning projects aimed at making Lagos a global megacity by mid-century.',
       author: 'Chioma Okereke',
+      date: '15 May 2026',
       img: 'https://images.unsplash.com/photo-1618828665011-0abd973f7bb8?w=700&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8bGFnb3MlMjBuaWdlcmlhfGVufDB8fDB8fHww'
     }
   ];
@@ -66,13 +68,19 @@ export function SpecialReports() {
                   <p className="text-white/60 text-lg font-medium max-w-xl group-hover:text-white transition-colors">
                     {report.desc}
                   </p>
-                  <div className="pt-6 border-t border-white/10 flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-white font-bold text-xs uppercase">
-                      {report.author.split(' ').map(n => n[0]).join('')}
+                  <div className="pt-6 border-t border-white/10 flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-white font-bold text-xs uppercase">
+                        {report.author.split(' ').map(n => n[0]).join('')}
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-white/40">Directed By</p>
+                        <p className="text-sm font-bold text-white">{report.author}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-[10px] font-black uppercase tracking-widest text-white/40">Directed By</p>
-                      <p className="text-sm font-bold text-white">{report.author}</p>
+                    <div className="text-right">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-white/40">Published</p>
+                      <p className="text-sm font-bold text-white">{report.date}</p>
                     </div>
                   </div>
                 </div>

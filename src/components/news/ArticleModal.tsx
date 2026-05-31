@@ -13,14 +13,19 @@ function formatDate(iso: string | null | undefined): string {
   try {
     const date = new Date(iso);
     if (isNaN(date.getTime())) return 'Date unavailable';
-    return date.toLocaleDateString('en-NG', {
+    const options: Intl.DateTimeFormatOptions = {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
       day: 'numeric',
       hour: '2-digit',
       minute: '2-digit',
-    });
+    };
+    try {
+      return date.toLocaleDateString('en-NG', options);
+    } catch {
+      return date.toLocaleDateString(undefined, options);
+    }
   } catch {
     return 'Date unavailable';
   }

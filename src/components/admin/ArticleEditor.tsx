@@ -9,6 +9,23 @@ import { Plus, Edit2, Trash2, Image as ImageIcon, Save, Loader2, ArrowLeft, Refr
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SERVICE_KEY = import.meta.env.VITE_SUPABASE_SERVICE_ROLE_KEY;
 
+function toLocalDatetimeString(dateInput: string | null | undefined): string {
+  if (!dateInput) return '';
+  try {
+    const d = new Date(dateInput);
+    if (isNaN(d.getTime())) return '';
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    const hours = String(d.getHours()).padStart(2, '0');
+    const minutes = String(d.getMinutes()).padStart(2, '0');
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  } catch {
+    return '';
+  }
+}
+
+
 export default function ArticleEditor() {
   const [articles, setArticles] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -139,7 +156,7 @@ export default function ArticleEditor() {
   };
 
   const handleCreateNew = () => {
-    setEditingArticle({ title: '', category: '', cover_image_url: '', content: '' });
+    setEditingArticle({ title: '', category: '', cover_image_url: '', content: '', published_at: new Date().toISOString() });
     if (editor) editor.commands.setContent('');
   };
 
@@ -253,7 +270,7 @@ export default function ArticleEditor() {
             />
           </div>
           
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
               <label className="block text-sm font-medium text-nag-gray-deep mb-1">Category</label>
               <select
@@ -285,6 +302,18 @@ export default function ArticleEditor() {
                 onChange={e => setEditingArticle({ ...editingArticle, cover_image_url: e.target.value })}
                 className="w-full px-4 py-3 rounded-xl border border-nag-border focus:ring-2 focus:ring-nag-green-primary outline-none"
                 placeholder="https://..."
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-nag-gray-deep mb-1">Published Date & Time</label>
+              <input
+                type="datetime-local"
+                value={toLocalDatetimeString(editingArticle.published_at)}
+                onChange={e => {
+                  const val = e.target.value;
+                  setEditingArticle({ ...editingArticle, published_at: val ? new Date(val).toISOString() : null });
+                }}
+                className="w-full px-4 py-3 rounded-xl border border-nag-border focus:ring-2 focus:ring-nag-green-primary outline-none"
               />
             </div>
           </div>

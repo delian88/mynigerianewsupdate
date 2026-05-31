@@ -27,7 +27,7 @@ export function useArticles({ limit = 10, category }: UseArticlesOptions = {}) {
   useEffect(() => {
     let mounted = true;
 
-    const fetch = async () => {
+    const loadArticles = async () => {
       try {
         setLoading(true);
         let query = supabase
@@ -49,7 +49,7 @@ export function useArticles({ limit = 10, category }: UseArticlesOptions = {}) {
             const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
             const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
             if (supabaseUrl && anonKey) {
-              fetch(`${supabaseUrl}/functions/v1/fetch-news`, {
+              window.fetch(`${supabaseUrl}/functions/v1/fetch-news`, {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
@@ -86,7 +86,7 @@ export function useArticles({ limit = 10, category }: UseArticlesOptions = {}) {
       }
     };
 
-    fetch();
+    loadArticles();
     return () => { mounted = false; };
   }, [limit, category]);
 

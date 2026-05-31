@@ -29,11 +29,36 @@ function formatShortDate(iso: string | null | undefined): string {
   try {
     const date = new Date(iso);
     if (isNaN(date.getTime())) return 'Unknown date';
-    return date.toLocaleDateString('en-NG', {
+    const options: Intl.DateTimeFormatOptions = {
       day: 'numeric',
       month: 'short',
       year: 'numeric',
-    });
+    };
+    try {
+      return date.toLocaleDateString('en-NG', options);
+    } catch {
+      return date.toLocaleDateString(undefined, options);
+    }
+  } catch {
+    return 'Unknown date';
+  }
+}
+
+function formatLongDate(iso: string | null | undefined): string {
+  if (!iso) return 'Unknown date';
+  try {
+    const date = new Date(iso);
+    if (isNaN(date.getTime())) return 'Unknown date';
+    const options: Intl.DateTimeFormatOptions = {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    };
+    try {
+      return date.toLocaleDateString('en-NG', options);
+    } catch {
+      return date.toLocaleDateString(undefined, options);
+    }
   } catch {
     return 'Unknown date';
   }
@@ -125,9 +150,7 @@ export function HeroSection() {
                       <span className="text-nag-green-secondary hidden sm:inline">•</span>
                       <span className="flex items-center gap-1.5 text-white/50 text-[9px]">
                         <Calendar size={10} />
-                        {new Date(heroArticle.published_at).toLocaleDateString('en-NG', {
-                          day: 'numeric', month: 'long', year: 'numeric',
-                        })}
+                        {formatLongDate(heroArticle.published_at)}
                       </span>
                     </div>
                     <div className="text-white/80 text-[10px] font-black uppercase tracking-widest flex items-center gap-2 group-hover:gap-4 transition-all">
