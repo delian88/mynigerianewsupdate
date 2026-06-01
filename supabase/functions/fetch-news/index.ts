@@ -155,12 +155,19 @@ serve(async (req) => {
       console.log('Successfully pruned old automatically-fetched articles.');
     }
 
-    let allArticles: Article[] = [];
+    // Fetch all feeds in parallel to minimize latency (slashes time from ~20s to ~2-3s)
+    const feedPromises = FEEDS.map(async (feed) => {
+      try {
+        const articles = await fetchRssFeed(feed.url, feed.category);
+        return articles.slice(0, 10);
+      } catch (err) {
+        console.error(`Failed to fetch feed ${feed.url}:`, err);
+        return [];
+      }
+    });
 
-    for (const feed of FEEDS) {
-      const articles = await fetchRssFeed(feed.url, feed.category);
-      allArticles.push(...articles.slice(0, 10)); // max 10 per feed
-    }
+    const results = await Promise.all(feedPromises);
+    const allArticles = results.flat();
 
     // Deduplicate by title before upserting
     const seen = new Set<string>();

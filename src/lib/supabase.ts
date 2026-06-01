@@ -10,7 +10,7 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 // Proxy configuration to bypass local browser adblocker/shields blocking supabase.co domains
 const isBrowser = typeof window !== 'undefined';
-const useProxy = isBrowser && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+const useProxy = isBrowser && import.meta.env.DEV;
 const activeSupabaseUrl = useProxy 
   ? `${window.location.origin}/supabase` 
   : supabaseUrl;

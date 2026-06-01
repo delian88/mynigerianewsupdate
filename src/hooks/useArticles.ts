@@ -12,6 +12,7 @@ export interface Article {
   published_at: string;
   created_at: string;
   view_count: number;
+  is_special_report?: boolean;
 }
 
 interface UseArticlesOptions {
@@ -55,32 +56,56 @@ export function useArticles({ limit = 10, category }: UseArticlesOptions = {}) {
         if (mounted) {
           // If no articles exist in the database, trigger RSS fetch in the background automatically
           if ((!data || data.length === 0) && !category) {
-            const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-            const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-            if (supabaseUrl && anonKey) {
-              console.log('[useArticles] Database is empty, triggering edge function fetch...');
-              window.fetch(`${supabaseUrl}/functions/v1/fetch-news`, {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                  'Authorization': `Bearer ${anonKey}`,
-                },
-                body: JSON.stringify({}),
-              })
-                .then(async (res) => {
-                  console.log('[useArticles] Edge function response status:', res.status);
-                  if (res.ok) {
-                    const { data: newData } = await query;
-                    console.log('[useArticles] Post-fetch query result:', { count: newData?.length });
-                    if (mounted && newData && newData.length > 0) {
-                      setArticles(newData.map(a => ({
-                        ...a,
-                        published_at: a.published_at || a.created_at,
-                      })));
-                    }
-                  }
+            const isBrowser = typeof window !== 'undefined';
+            const fetchKey = 'mynigeria_news_fetch_in_progress';
+
+            if (isBrowser && sessionStorage.getItem(fetchKey)) {
+              console.log('[useArticles] RSS fetch already in progress or completed in this session. Skipping duplicate call.');
+            } else {
+              if (isBrowser) {
+                sessionStorage.setItem(fetchKey, 'true');
+              }
+
+              const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+              const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+              if (supabaseUrl && anonKey) {
+                console.log('[useArticles] Database is empty, triggering edge function fetch...');
+                
+                // Route through local proxy in development to bypass adblocker/shields blocks
+                const useProxy = isBrowser && import.meta.env.DEV;
+                const fetchEndpoint = useProxy 
+                  ? `${window.location.origin}/supabase/functions/v1/fetch-news` 
+                  : `${supabaseUrl}/functions/v1/fetch-news`;
+
+                window.fetch(fetchEndpoint, {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${anonKey}`,
+                  },
+                  body: JSON.stringify({}),
                 })
-                .catch((err) => console.error('[useArticles] Failed to auto-fetch news:', err));
+                  .then(async (res) => {
+                    console.log('[useArticles] Edge function response status:', res.status);
+                    if (res.ok) {
+                      const { data: newData } = await query;
+                      console.log('[useArticles] Post-fetch query result:', { count: newData?.length });
+                      if (mounted && newData && newData.length > 0) {
+                        setArticles(newData.map(a => ({
+                          ...a,
+                          published_at: a.published_at || a.created_at,
+                        })));
+                      }
+                    } else {
+                      // On error, let us remove the session item so they can try again on refresh
+                      if (isBrowser) sessionStorage.removeItem(fetchKey);
+                    }
+                  })
+                  .catch((err) => {
+                    console.error('[useArticles] Failed to auto-fetch news:', err);
+                    if (isBrowser) sessionStorage.removeItem(fetchKey);
+                  });
+              }
             }
           }
 

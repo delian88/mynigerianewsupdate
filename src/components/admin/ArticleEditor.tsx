@@ -156,7 +156,7 @@ export default function ArticleEditor() {
   };
 
   const handleCreateNew = () => {
-    setEditingArticle({ title: '', category: '', cover_image_url: '', content: '', published_at: new Date().toISOString() });
+    setEditingArticle({ title: '', category: '', cover_image_url: '', content: '', published_at: new Date().toISOString(), is_special_report: false });
     if (editor) editor.commands.setContent('');
   };
 
@@ -297,7 +297,7 @@ export default function ArticleEditor() {
             />
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <div>
               <label className="block text-sm font-medium text-nag-gray-deep mb-1">Category</label>
               <select
@@ -366,6 +366,20 @@ export default function ArticleEditor() {
                 }}
                 className="w-full px-4 py-3 rounded-xl border border-nag-border focus:ring-2 focus:ring-nag-green-primary outline-none"
               />
+            </div>
+            <div className="flex flex-col justify-end pb-3">
+              <label className="flex items-center gap-3 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={!!editingArticle.is_special_report}
+                  onChange={e => setEditingArticle({ ...editingArticle, is_special_report: e.target.checked })}
+                  className="w-5 h-5 rounded border-nag-border text-nag-green-primary focus:ring-nag-green-primary focus:ring-opacity-20 cursor-pointer"
+                />
+                <div>
+                  <span className="text-xs font-black uppercase text-nag-black tracking-wider block">Special Report</span>
+                  <span className="text-[10px] text-nag-gray-deep font-semibold block leading-tight">Feature in Strategic Intel Slider</span>
+                </div>
+              </label>
             </div>
           </div>
 
@@ -441,8 +455,11 @@ export default function ArticleEditor() {
                   <td className="p-4 font-medium text-nag-black max-w-xs">
                     <p className="line-clamp-2 text-sm">{article.title}</p>
                   </td>
-                  <td className="p-4 text-sm text-nag-gray-deep">
+                  <td className="p-4 text-sm text-nag-gray-deep whitespace-nowrap">
                     <span className="bg-white border border-nag-border px-2 py-1 rounded-md text-xs font-bold uppercase">{article.category || 'Uncategorized'}</span>
+                    {article.is_special_report && (
+                      <span className="ml-2 bg-nag-green-primary/10 border border-nag-green-primary/20 px-2.5 py-1 rounded-lg text-[9px] font-black text-nag-green-primary uppercase tracking-widest">Special Report</span>
+                    )}
                   </td>
                   <td className="p-4 text-sm text-nag-gray-deep whitespace-nowrap">
                     {new Date(article.published_at || article.created_at).toLocaleDateString('en-NG', {
