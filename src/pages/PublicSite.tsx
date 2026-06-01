@@ -235,24 +235,27 @@ export default function PublicSite() {
 
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-8 items-center bg-white">
                 {[
-                  { name: 'BusinessDay', color: '#1C355E' },
-                  { name: 'Vanguard', color: '#FFDE00' },
-                  { name: 'Daily Trust', color: '#008751' },
-                  { name: 'Guardian', color: '#0077C8' },
-                  { name: 'Punch', color: '#EC1C24' },
-                  { name: 'Premium Times', color: '#0056B3' },
-                  { name: 'Channels TV', color: '#144799' },
-                  { name: 'Arise News', color: '#D11414' },
-                  { name: 'TVC News', color: '#B22222' },
-                  { name: 'NTA', color: '#006400' },
-                  { name: 'Nairametrics', color: '#E86121' },
-                  { name: 'Proshare', color: '#C52026' }
+                  { name: 'BusinessDay', color: '#1C355E', url: 'https://businessday.ng' },
+                  { name: 'Vanguard', color: '#FFDE00', url: 'https://www.vanguardngr.com' },
+                  { name: 'Daily Trust', color: '#008751', url: 'https://dailytrust.com' },
+                  { name: 'Guardian', color: '#0077C8', url: 'https://guardian.ng' },
+                  { name: 'Punch', color: '#EC1C24', url: 'https://punchng.com' },
+                  { name: 'Premium Times', color: '#0056B3', url: 'https://www.premiumtimesng.com' },
+                  { name: 'Channels TV', color: '#144799', url: 'https://www.channelstv.com' },
+                  { name: 'Arise News', color: '#D11414', url: 'https://www.arise.tv' },
+                  { name: 'TVC News', color: '#B22222', url: 'https://tvcnews.tv' },
+                  { name: 'NTA', color: '#006400', url: 'https://nta.ng' },
+                  { name: 'Nairametrics', color: '#E86121', url: 'https://nairametrics.com' },
+                  { name: 'Proshare', color: '#C52026', url: 'https://www.proshare.co' }
                 ].map((brand, i) => (
-                  <motion.div
+                  <motion.a
+                    href={brand.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     initial={{ opacity: 1, y: 0 }}
                     whileHover={{ scale: 1.05, y: -5 }}
                     key={i}
-                    className="flex flex-col items-center gap-2 md:gap-3 group cursor-pointer transition-all"
+                    className="flex flex-col items-center gap-2 md:gap-3 group cursor-pointer transition-all w-full"
                   >
                     <div className="w-full h-12 md:h-16 bg-white rounded-xl md:rounded-2xl flex items-center justify-center border border-nag-border group-hover:border-transparent group-hover:shadow-2xl p-2 md:p-4 transition-all duration-500 ring-1 ring-nag-border/50"
                       style={{
@@ -267,7 +270,7 @@ export default function PublicSite() {
                         {brand.name}
                       </span>
                     </div>
-                  </motion.div>
+                  </motion.a>
                 ))}
               </div>
             </div>
