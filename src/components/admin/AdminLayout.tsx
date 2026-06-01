@@ -96,11 +96,10 @@ export default function AdminLayout() {
       title: 'Content Management',
       items: [
         { name: 'Posts', path: '/admin/articles', icon: FileText },
-        { name: 'Podcasts', path: '/admin/podcasts', icon: Radio },
+        { name: 'Media Hub Manager', path: '/admin/media', icon: Image },
         { name: 'Car Marketplace', path: '/admin/cars', icon: Car },
         { name: 'Categories', path: '/admin/categories', icon: Folder },
         { name: 'Authors', path: '#authors', icon: User },
-        { name: 'Media Library', path: '#media', icon: Image },
         { name: 'Pages', path: '#pages', icon: Layers },
         { name: 'Comments', path: '#comments', icon: MessageSquare },
       ]

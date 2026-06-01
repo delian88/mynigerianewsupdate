@@ -9,11 +9,17 @@ const AdminLogin = lazy(() => import('./components/admin/AdminLogin'));
 const AdminDashboard = lazy(() => import('./components/admin/AdminDashboard'));
 const SettingsEditor = lazy(() => import('./components/admin/SettingsEditor'));
 const ArticleEditor = lazy(() => import('./components/admin/ArticleEditor'));
-const PodcastEditor = lazy(() => import('./components/admin/PodcastEditor'));
+const MediaManager = lazy(() => import('./components/admin/MediaManager'));
 const UserManagement = lazy(() => import('./components/admin/UserManagement'));
 const CategoryManager = lazy(() => import('./components/admin/CategoryManager'));
 const CarMarketplaceEditor = lazy(() => import('./components/admin/CarMarketplaceEditor'));
 const AutomotiveCatalog = lazy(() => import('./pages/AutomotiveCatalog'));
+
+// Lazy load public media pages
+const VideosPage = lazy(() => import('./pages/VideosPage'));
+const PodcastsPage = lazy(() => import('./pages/PodcastsPage'));
+const InfographicsPage = lazy(() => import('./pages/InfographicsPage'));
+const PhotosPage = lazy(() => import('./pages/PhotosPage'));
 
 export default function App() {
   return (
@@ -24,6 +30,28 @@ export default function App() {
         <Route path="/automotive" element={
           <Suspense fallback={<div className="flex justify-center py-24"><div className="w-8 h-8 rounded-full border-4 border-nag-green-primary border-t-transparent animate-spin"></div></div>}>
             <AutomotiveCatalog />
+          </Suspense>
+        } />
+        
+        {/* Public Media Pages */}
+        <Route path="/videos" element={
+          <Suspense fallback={<div className="flex justify-center py-24"><div className="w-8 h-8 rounded-full border-4 border-nag-green-primary border-t-transparent animate-spin"></div></div>}>
+            <VideosPage />
+          </Suspense>
+        } />
+        <Route path="/podcasts" element={
+          <Suspense fallback={<div className="flex justify-center py-24"><div className="w-8 h-8 rounded-full border-4 border-nag-green-primary border-t-transparent animate-spin"></div></div>}>
+            <PodcastsPage />
+          </Suspense>
+        } />
+        <Route path="/infographics" element={
+          <Suspense fallback={<div className="flex justify-center py-24"><div className="w-8 h-8 rounded-full border-4 border-nag-green-primary border-t-transparent animate-spin"></div></div>}>
+            <InfographicsPage />
+          </Suspense>
+        } />
+        <Route path="/photos" element={
+          <Suspense fallback={<div className="flex justify-center py-24"><div className="w-8 h-8 rounded-full border-4 border-nag-green-primary border-t-transparent animate-spin"></div></div>}>
+            <PhotosPage />
           </Suspense>
         } />
         
@@ -42,7 +70,7 @@ export default function App() {
           <Route index element={<AdminDashboard />} />
           <Route path="settings" element={<SettingsEditor />} />
           <Route path="articles" element={<ArticleEditor />} />
-          <Route path="podcasts" element={<PodcastEditor />} />
+          <Route path="media" element={<MediaManager />} />
           <Route path="users" element={<UserManagement />} />
           <Route path="categories" element={<CategoryManager />} />
           <Route path="cars" element={<CarMarketplaceEditor />} />

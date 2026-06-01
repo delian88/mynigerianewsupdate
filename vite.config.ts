@@ -23,6 +23,7 @@ export default defineConfig(({mode}) => {
         '/supabase': {
           target: 'https://dsqwhzcaiyvcliigmggd.supabase.co',
           changeOrigin: true,
+          ws: true,
           rewrite: (path) => path.replace(/^\/supabase/, ''),
         },
       },

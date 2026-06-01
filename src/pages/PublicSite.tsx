@@ -15,7 +15,7 @@ import { GovernmentDashboard } from '../components/gov/GovernmentDashboard';
 import { PodcastModal } from '../components/news/PodcastModal';
 import { Newspaper, Radio, PlayCircle, Layers, Globe, ChevronRight } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 
 export default function PublicSite() {
@@ -25,6 +25,7 @@ export default function PublicSite() {
   const [activeMarketplaceTab, setActiveMarketplaceTab] = useState<'automotive' | 'realestate' | 'careers'>('automotive');
 
   const location = useLocation();
+  const navigate = useNavigate();
 
   // Handle category and tab selection passed back from the automotive catalog page
   useEffect(() => {
@@ -155,8 +156,14 @@ export default function PublicSite() {
                     whileHover={{ y: -12, scale: 1.02 }}
                     key={i} 
                     onClick={() => {
-                      if (item.title === 'Podcasts') {
-                        setIsPodcastOpen(true);
+                      if (item.title === 'Original Videos') {
+                        navigate('/videos');
+                      } else if (item.title === 'Podcasts') {
+                        navigate('/podcasts');
+                      } else if (item.title === 'Infographics') {
+                        navigate('/infographics');
+                      } else if (item.title === 'Photo Stories') {
+                        navigate('/photos');
                       }
                     }}
                     className="group relative h-[420px] md:h-[460px] rounded-[40px] overflow-hidden bg-white border border-nag-border hover:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.12)] hover:border-nag-green-primary/30 transition-all duration-700 cursor-pointer flex flex-col"
