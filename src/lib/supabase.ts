@@ -8,7 +8,14 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing Supabase environment variables');
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Proxy configuration to bypass local browser adblocker/shields blocking supabase.co domains
+const isBrowser = typeof window !== 'undefined';
+const useProxy = isBrowser && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+const activeSupabaseUrl = useProxy 
+  ? `${window.location.origin}/supabase` 
+  : supabaseUrl;
+
+export const supabase = createClient(activeSupabaseUrl, supabaseAnonKey);
 
 const isValidJWT = (token?: string) => {
   if (!token) return false;
@@ -17,7 +24,7 @@ const isValidJWT = (token?: string) => {
 };
 
 export const supabaseAdmin = (supabaseServiceKey && isValidJWT(supabaseServiceKey))
-  ? createClient(supabaseUrl, supabaseServiceKey, {
+  ? createClient(activeSupabaseUrl, supabaseServiceKey, {
       auth: {
         persistSession: false,
         autoRefreshToken: false,

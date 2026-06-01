@@ -1,4 +1,4 @@
-import { Car, Home, Briefcase, Filter, Search, ChevronRight, Tag, MapPin, BadgeCheck, Loader2, Image as ImageIcon, CreditCard, Lock, ShieldCheck, Check } from 'lucide-react';
+import { Car, Home, Briefcase, Filter, Search, ChevronLeft, ChevronRight, Tag, MapPin, BadgeCheck, Loader2, Image as ImageIcon, CreditCard, Lock, ShieldCheck, Check } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { MarketplaceItem, AutomotiveItem, RealEstateItem, CareerItem } from '../../types';
@@ -6,6 +6,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { supabase } from '../../lib/supabase';
 import { AuthModal } from '../news/AuthModal';
 import toast from 'react-hot-toast';
+import { Link } from 'react-router-dom';
 
 const promiseWithTimeout = (promise: Promise<any>, timeoutMs: number = 30000) => {
   return Promise.race([
@@ -85,6 +86,45 @@ const FALLBACK_CARS = [
     img: 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?q=80&w=600&fit=crop',
     status: 'approved',
     created_at: new Date().toISOString()
+  },
+  {
+    id: 'fallback-lexus-lx570',
+    title: '2021 Lexus LX 570 Super Sport',
+    price: '₦125,000,000',
+    priceVal: 125000000,
+    year: 2021,
+    model: 'Lexus',
+    location: 'Lagos, NG',
+    badge: 'Hot',
+    img: 'https://images.unsplash.com/photo-1511919884226-fd3cad34687c?q=80&w=600&fit=crop',
+    status: 'approved',
+    created_at: new Date().toISOString()
+  },
+  {
+    id: 'fallback-maybach-s580',
+    title: '2023 Mercedes-Benz S580 Maybach',
+    price: '₦165,000,000',
+    priceVal: 165000000,
+    year: 2023,
+    model: 'Mercedes',
+    location: 'Abuja, NG',
+    badge: 'Verified Dealer',
+    img: 'https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?q=80&w=600&fit=crop',
+    status: 'approved',
+    created_at: new Date().toISOString()
+  },
+  {
+    id: 'fallback-lc8',
+    title: '2020 Toyota Land Cruiser V8',
+    price: '₦62,000,000',
+    priceVal: 62000000,
+    year: 2020,
+    model: 'Toyota',
+    location: 'Port Harcourt, NG',
+    badge: 'Secure Trade',
+    img: 'https://images.unsplash.com/photo-1594568284297-7c64464062b1?q=80&w=600&fit=crop',
+    status: 'approved',
+    created_at: new Date().toISOString()
   }
 ];
 
@@ -106,6 +146,22 @@ export function MarketplaceHub({
     careers: { sector: 'All', location: 'All' }
   });
   const [sortBy, setSortBy] = useState('Newest');
+
+  const automotiveScrollRef = useRef<HTMLDivElement>(null);
+
+  const scrollLeft = () => {
+    if (automotiveScrollRef.current) {
+      automotiveScrollRef.current.scrollBy({ left: -340, behavior: 'smooth' });
+    }
+  };
+
+  const scrollRight = () => {
+    if (automotiveScrollRef.current) {
+      automotiveScrollRef.current.scrollBy({ left: 340, behavior: 'smooth' });
+    }
+  };
+
+  const [isHovered, setIsHovered] = useState(false);
 
   // Supabase states
   const [dbCars, setDbCars] = useState<AutomotiveItem[]>([]);
@@ -145,7 +201,7 @@ export function MarketplaceHub({
 
   const fetchCars = async () => {
     try {
-      console.log('[MarketplaceHub] fetchCars started (5s timeout)...');
+      console.log('[MarketplaceHub] fetchCars started (15s timeout)...');
       setCarsLoading(true);
       const { data, error } = await promiseWithTimeout(
         Promise.resolve(
@@ -154,7 +210,7 @@ export function MarketplaceHub({
             .select('*')
             .order('created_at', { ascending: false })
         ),
-        5000 // 5 seconds SELECT timeout
+        15000 // 15 seconds SELECT timeout
       ) as any;
       console.log('[MarketplaceHub] fetchCars result:', { count: data?.length, error });
       if (error) throw error;
@@ -182,7 +238,7 @@ export function MarketplaceHub({
 
   const fetchPlans = async () => {
     try {
-      console.log('[MarketplaceHub] fetchPlans started (5s timeout)...');
+      console.log('[MarketplaceHub] fetchPlans started (15s timeout)...');
       const { data, error } = await promiseWithTimeout(
         Promise.resolve(
           supabase
@@ -190,7 +246,7 @@ export function MarketplaceHub({
             .select('*')
             .order('price', { ascending: true })
         ),
-        5000 // 5 seconds SELECT timeout
+        15000 // 15 seconds SELECT timeout
       ) as any;
       console.log('[MarketplaceHub] fetchPlans result:', { count: data?.length, error });
       if (error) throw error;
@@ -408,6 +464,28 @@ export function MarketplaceHub({
     return 0;
   });
 
+  // Auto-sliding interval for automotive catalog
+  useEffect(() => {
+    if (activeTab !== 'automotive' || carsLoading || filteredData.length <= 1 || isHovered) {
+      return;
+    }
+
+    const interval = setInterval(() => {
+      if (automotiveScrollRef.current) {
+        const { scrollLeft, clientWidth, scrollWidth } = automotiveScrollRef.current;
+        
+        // Loop back smoothly to the beginning if we reached the end of the scroll track
+        if (scrollLeft + clientWidth >= scrollWidth - 10) {
+          automotiveScrollRef.current.scrollTo({ left: 0, behavior: 'smooth' });
+        } else {
+          automotiveScrollRef.current.scrollBy({ left: 340, behavior: 'smooth' });
+        }
+      }
+    }, 4000); // Auto-slide every 4 seconds
+
+    return () => clearInterval(interval);
+  }, [activeTab, carsLoading, filteredData.length, isHovered]);
+
   const handleFilterChange = (category: string, value: string) => {
     setFilters((prev: any) => ({
       ...prev,
@@ -571,35 +649,106 @@ export function MarketplaceHub({
           </div>
 
           <AnimatePresence mode="wait">
-            <motion.div
-              key={activeTab + searchQuery + JSON.stringify(filters[activeTab]) + sortBy + dbCars.length}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
-            >
-              {activeTab === 'automotive' && carsLoading ? (
-                <div className="col-span-full py-20 text-center"><Loader2 className="animate-spin mx-auto text-nag-green-primary" size={32} /></div>
+            {activeTab === 'automotive' ? (
+              carsLoading ? (
+                <div key="automotive-loading" className="py-20 text-center w-full"><Loader2 className="animate-spin mx-auto text-nag-green-primary" size={32} /></div>
               ) : filteredData.length > 0 ? (
-                filteredData.map((item) => (
-                  <ListingCard key={item.id} item={item} />
-                ))
+                <motion.div
+                  key="automotive-slider"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  className="relative group/slider w-full"
+                >
+                  {/* Glassmorphic Side Arrows for Sliding */}
+                  <button
+                    type="button"
+                    onClick={scrollLeft}
+                    className="absolute -left-4 top-1/2 -translate-y-1/2 z-40 w-12 h-12 rounded-full bg-white/90 hover:bg-white border border-nag-border flex items-center justify-center text-nag-black shadow-lg opacity-0 group-hover/slider:opacity-100 transition-opacity duration-300 pointer-events-auto cursor-pointer focus:outline-none focus:ring-2 focus:ring-nag-green-primary"
+                    aria-label="Scroll left"
+                  >
+                    <ChevronLeft size={20} />
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={scrollRight}
+                    className="absolute -right-4 top-1/2 -translate-y-1/2 z-40 w-12 h-12 rounded-full bg-white/90 hover:bg-white border border-nag-border flex items-center justify-center text-nag-black shadow-lg opacity-0 group-hover/slider:opacity-100 transition-opacity duration-300 pointer-events-auto cursor-pointer focus:outline-none focus:ring-2 focus:ring-nag-green-primary"
+                    aria-label="Scroll right"
+                  >
+                    <ChevronRight size={20} />
+                  </button>
+
+                  {/* Horizontal Scroll Snap Track */}
+                  <div
+                    ref={automotiveScrollRef}
+                    onMouseEnter={() => setIsHovered(true)}
+                    onMouseLeave={() => setIsHovered(false)}
+                    className="flex gap-6 overflow-x-auto snap-x snap-mandatory scroll-smooth no-scrollbar py-4 px-1"
+                  >
+                    {filteredData.map((item) => (
+                      <div key={item.id} className="w-[280px] sm:w-[340px] shrink-0 snap-start">
+                        <ListingCard item={item} />
+                      </div>
+                    ))}
+                  </div>
+                </motion.div>
               ) : (
-                <div className="col-span-full py-20 text-center space-y-4">
+                <motion.div
+                  key="automotive-empty"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  className="py-20 text-center space-y-4 w-full"
+                >
                   <div className="w-16 h-16 rounded-full bg-nag-gray-bg flex items-center justify-center mx-auto text-nag-gray-deep opacity-20">
                     <Search size={32} />
                   </div>
                   <h3 className="text-xl font-display font-black text-nag-black">No results found.</h3>
                   <p className="text-nag-gray-deep text-sm font-medium">Try adjusting your filters or search query to find what you are looking for.</p>
-                </div>
-              )}
-            </motion.div>
+                </motion.div>
+              )
+            ) : (
+              <motion.div
+                key={activeTab + searchQuery + JSON.stringify(filters[activeTab]) + sortBy}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full"
+              >
+                {filteredData.length > 0 ? (
+                  filteredData.map((item) => (
+                    <ListingCard key={item.id} item={item} />
+                  ))
+                ) : (
+                  <div className="col-span-full py-20 text-center space-y-4">
+                    <div className="w-16 h-16 rounded-full bg-nag-gray-bg flex items-center justify-center mx-auto text-nag-gray-deep opacity-20">
+                      <Search size={32} />
+                    </div>
+                    <h3 className="text-xl font-display font-black text-nag-black">No results found.</h3>
+                    <p className="text-nag-gray-deep text-sm font-medium">Try adjusting your filters or search query to find what you are looking for.</p>
+                  </div>
+                )}
+              </motion.div>
+            )}
           </AnimatePresence>
 
           <div className="mt-12 flex justify-center">
-            <button className="flex items-center gap-2 group font-display font-black uppercase text-xs tracking-widest text-nag-green-primary border-b-2 border-nag-green-primary pb-1 hover:gap-4 transition-all">
-              See all listings in {activeTab} <ChevronRight size={16} />
-            </button>
+            {activeTab === 'automotive' ? (
+              <Link
+                to="/automotive"
+                className="flex items-center gap-2 group font-display font-black uppercase text-xs tracking-widest text-nag-green-primary border-b-2 border-nag-green-primary pb-1 hover:gap-4 transition-all"
+              >
+                See all listings in {activeTab} <ChevronRight size={16} />
+              </Link>
+            ) : (
+              <button
+                onClick={() => toast.success(`Vetted ${activeTab === 'realestate' ? 'Real Estate' : 'Careers'} catalog is launching soon!`)}
+                className="flex items-center gap-2 group font-display font-black uppercase text-xs tracking-widest text-nag-green-primary border-b-2 border-nag-green-primary pb-1 hover:gap-4 transition-all"
+              >
+                See all listings in {activeTab} <ChevronRight size={16} />
+              </button>
+            )}
           </div>
         </div>
       </section>

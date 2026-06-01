@@ -84,6 +84,45 @@ const FALLBACK_CARS = [
     img: 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?q=80&w=600&fit=crop',
     status: 'approved',
     created_at: new Date().toISOString()
+  },
+  {
+    id: 'fallback-lexus-lx570',
+    title: '2021 Lexus LX 570 Super Sport',
+    price: '₦125,000,000',
+    price_val: 125000000,
+    year: 2021,
+    model: 'Lexus',
+    location: 'Lagos, NG',
+    badge: 'Hot',
+    img: 'https://images.unsplash.com/photo-1511919884226-fd3cad34687c?q=80&w=600&fit=crop',
+    status: 'approved',
+    created_at: new Date().toISOString()
+  },
+  {
+    id: 'fallback-maybach-s580',
+    title: '2023 Mercedes-Benz S580 Maybach',
+    price: '₦165,000,000',
+    price_val: 165000000,
+    year: 2023,
+    model: 'Mercedes',
+    location: 'Abuja, NG',
+    badge: 'Verified Dealer',
+    img: 'https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?q=80&w=600&fit=crop',
+    status: 'approved',
+    created_at: new Date().toISOString()
+  },
+  {
+    id: 'fallback-lc8',
+    title: '2020 Toyota Land Cruiser V8',
+    price: '₦62,000,000',
+    price_val: 62000000,
+    year: 2020,
+    model: 'Toyota',
+    location: 'Port Harcourt, NG',
+    badge: 'Secure Trade',
+    img: 'https://images.unsplash.com/photo-1594568284297-7c64464062b1?q=80&w=600&fit=crop',
+    status: 'approved',
+    created_at: new Date().toISOString()
   }
 ];
 
@@ -112,7 +151,7 @@ export default function CarMarketplaceEditor() {
     
     if (activeTab === 'cars') {
       try {
-        console.log('[CarMarketplaceEditor] Fetching cars from Supabase (5s timeout)...');
+        console.log('[CarMarketplaceEditor] Fetching cars from Supabase (15s timeout)...');
         const { data, error } = await promiseWithTimeout(
           Promise.resolve(
             supabase
@@ -120,7 +159,7 @@ export default function CarMarketplaceEditor() {
               .select('*')
               .order('created_at', { ascending: false })
           ),
-          5000 // 5 seconds SELECT timeout
+          15000 // 15 seconds SELECT timeout
         ) as any;
         console.log('[CarMarketplaceEditor] Cars result:', { count: data?.length, error });
         if (error) throw error;
@@ -128,13 +167,13 @@ export default function CarMarketplaceEditor() {
       } catch (err: any) {
         console.warn('[CarMarketplaceEditor] Failed to fetch cars, using fallback catalog:', err);
         setCars(FALLBACK_CARS);
-        toast.error('Offline Mode: Loaded cached vehicle catalog. (Supabase connection timed out due to your browser privacy/adblocker shields blocking database queries).', { duration: 6000 });
+        toast.error('Offline Mode: Loaded cached vehicle catalog. (Supabase connection timed out due to your browser privacy/adblocker shields blocking database queries).', { id: 'editor-cars-timeout', duration: 6000 });
       } finally {
         setLoading(false);
       }
     } else {
       try {
-        console.log('[CarMarketplaceEditor] Fetching plans from Supabase (5s timeout)...');
+        console.log('[CarMarketplaceEditor] Fetching plans from Supabase (15s timeout)...');
         const { data, error } = await promiseWithTimeout(
           Promise.resolve(
             supabase
@@ -142,7 +181,7 @@ export default function CarMarketplaceEditor() {
               .select('*')
               .order('price', { ascending: true })
           ),
-          5000 // 5 seconds SELECT timeout
+          15000 // 15 seconds SELECT timeout
         ) as any;
         console.log('[CarMarketplaceEditor] Plans result:', { count: data?.length, error });
         if (error) throw error;
@@ -150,7 +189,7 @@ export default function CarMarketplaceEditor() {
       } catch (err: any) {
         console.warn('[CarMarketplaceEditor] Failed to fetch subscription plans, using fallback tiers:', err);
         setPlans(FALLBACK_PLANS);
-        toast.error('Offline Mode: Loaded subscription tiers. (Supabase request blocked by your browser privacy shields or ad-blocker on "subscription" keywords).', { duration: 8000 });
+        toast.error('Offline Mode: Loaded subscription tiers. (Supabase request blocked by your browser privacy shields or ad-blocker on "subscription" keywords).', { id: 'editor-plans-timeout', duration: 8000 });
       } finally {
         setLoading(false);
       }

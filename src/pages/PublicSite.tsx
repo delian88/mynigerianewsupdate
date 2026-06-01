@@ -14,7 +14,8 @@ import { MarketplaceHub } from '../components/marketplace/MarketplaceHub';
 import { GovernmentDashboard } from '../components/gov/GovernmentDashboard';
 import { PodcastModal } from '../components/news/PodcastModal';
 import { Newspaper, Radio, PlayCircle, Layers, Globe, ChevronRight } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { motion } from 'motion/react';
 
 export default function PublicSite() {
@@ -22,6 +23,29 @@ export default function PublicSite() {
   const [isPodcastOpen, setIsPodcastOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [activeMarketplaceTab, setActiveMarketplaceTab] = useState<'automotive' | 'realestate' | 'careers'>('automotive');
+
+  const location = useLocation();
+
+  // Handle category and tab selection passed back from the automotive catalog page
+  useEffect(() => {
+    if (location.state) {
+      const state = location.state as any;
+      if (state.selectedCategory !== undefined) {
+        setSelectedCategory(state.selectedCategory);
+      }
+      if (state.activeMarketplaceTab !== undefined) {
+        setActiveMarketplaceTab(state.activeMarketplaceTab);
+        
+        // Auto-scroll to the marketplace hub smoothly
+        const el = document.getElementById('marketplace');
+        if (el) {
+          setTimeout(() => el.scrollIntoView({ behavior: 'smooth' }), 200);
+        }
+      }
+      // Clear location state to prevent repeating on reload
+      window.history.replaceState(null, '');
+    }
+  }, [location.state]);
 
   return (
     <div className="min-h-screen flex flex-col font-sans selection:bg-nag-green-primary selection:text-white bg-nag-gray-bg">

@@ -13,6 +13,7 @@ const PodcastEditor = lazy(() => import('./components/admin/PodcastEditor'));
 const UserManagement = lazy(() => import('./components/admin/UserManagement'));
 const CategoryManager = lazy(() => import('./components/admin/CategoryManager'));
 const CarMarketplaceEditor = lazy(() => import('./components/admin/CarMarketplaceEditor'));
+const AutomotiveCatalog = lazy(() => import('./pages/AutomotiveCatalog'));
 
 export default function App() {
   return (
@@ -20,6 +21,11 @@ export default function App() {
       <Toaster position="top-right" />
       <Routes>
         <Route path="/" element={<PublicSite />} />
+        <Route path="/automotive" element={
+          <Suspense fallback={<div className="flex justify-center py-24"><div className="w-8 h-8 rounded-full border-4 border-nag-green-primary border-t-transparent animate-spin"></div></div>}>
+            <AutomotiveCatalog />
+          </Suspense>
+        } />
         
         {/* Admin Routes */}
         <Route path="/admin/login" element={

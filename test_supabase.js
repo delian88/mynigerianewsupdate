@@ -15,11 +15,12 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 async function run() {
   try {
-    console.log('\n--- Querying marketplace_cars ---');
+    console.log('\n--- Querying marketplace_cars (exact catalog query) ---');
     const { data: cars, error: carsErr } = await supabase
       .from('marketplace_cars')
       .select('*')
-      .limit(3);
+      .eq('status', 'approved')
+      .order('created_at', { ascending: false });
     console.log('Cars Error:', carsErr);
     console.log('Cars Data Count:', cars?.length);
     if (cars && cars.length > 0) {
